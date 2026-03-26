@@ -208,38 +208,32 @@ section {
     color: #ffffff;
 }
 
+/* About 섹션 및 장문 텍스트 포맷팅 */
 #about {
-    background-color: var(--color-1);
+    background-color: var(--color-2);
+    color: var(--color-1);
 }
 
-#about p {
-    font-size: 1.2rem;
-    max-width: 800px;
+#about .section-title {
+    color: var(--color-1);
+    border-color: var(--color-3);
 }
 
-/* 제원표(Table) 바우하우스 디자인 */
-#specs {
-    background-color: var(--color-1);
-    color: var(--color-5);
+.about-text-container {
+    max-width: 900px;
 }
 
-.specs-table {
-    width: 100%;
-    max-width: 800px;
-    border-collapse: collapse;
-    margin-top: 2rem;
+.about-text-container p {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
 }
 
-.specs-table th, .specs-table td {
-    padding: 1.5rem 1rem;
-    border-bottom: 2px solid var(--color-3);
-    text-align: left;
-    font-size: 1.2rem;
-}
-
-.specs-table th {
-    color: var(--color-4);
-    font-weight: 700;
-    width: 40%;
+.about-text-container h3 {
+    font-size: 1.8rem;
+    margin-top: 3.5rem;
+    margin-bottom: 1rem;
+    color: var(--color-1);
     text-transform: uppercase;
+    letter-spacing: 1px;
 }
