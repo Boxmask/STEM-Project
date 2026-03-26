@@ -1,3 +1,4 @@
+/* 색상 팔레트 유지 */
 :root {
     --color-1: #2C2E25;
     --color-2: #50543D;
@@ -17,236 +18,201 @@ body, html {
     background-color: var(--color-1);
     color: var(--color-5);
     scroll-behavior: smooth;
+    line-height: 1.6;
 }
 
+/* 네비게이션: 어둡고 직선적인 상단 바 */
 #navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem 4rem;
-    background-color: transparent;
+    background-color: rgba(44, 46, 37, 0.95); /* 반투명한 어두운 배경 */
     position: fixed;
     width: 100%;
     top: 0;
     z-index: 1000;
-    transition: background-color 0.3s ease, border-bottom 0.3s ease;
+    border-bottom: 1px solid var(--color-3);
+    text-transform: uppercase;
 }
 
 .logo {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 700;
-    color: #ffffff;
-    text-transform: uppercase;
-    letter-spacing: 2px;
+    color: var(--color-4);
+    letter-spacing: 3px;
 }
 
 .nav-links {
     list-style: none;
     display: flex;
-    gap: 3rem;
+    gap: 2.5rem;
 }
 
 .nav-links a {
-    color: #ffffff;
+    color: var(--color-5);
     text-decoration: none;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
-    text-transform: uppercase;
+    letter-spacing: 1px;
     transition: color 0.3s;
 }
 
-.nav-links a:hover {
-    color: #d0d0d0;
+.nav-links a:hover, .nav-links a.active {
+    color: #ffffff;
 }
 
+/* 히어로 섹션: 시각적 무게감과 굵은 타이포그래피 */
 .hero {
     height: 100vh;
     display: flex;
     align-items: center;
     padding: 0 10%;
     background:
-        linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.55)),
+        linear-gradient(rgba(44, 46, 37, 0.8), rgba(44, 46, 37, 0.95)),
         url("company_building.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    border-bottom: 15px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 5px solid var(--color-4);
 }
 
 .hero-content {
-    background: rgba(30, 30, 35, 0.78);
-    padding: 3rem;
-    max-width: 650px;
-    border-radius: 4px;
-    backdrop-filter: blur(2px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-}
-
-.hero-content h1 {
-    font-size: 5rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin-bottom: 1rem;
-    letter-spacing: 4px;
-}
-
-.hero-content p {
-    font-size: 1.4rem;
-    color: #e3e3e3;
-    margin-bottom: 2.5rem;
-    font-weight: 400;
-    line-height: 1.6;
-}
-
-.btn {
-    display: inline-block;
-    padding: 1rem 3rem;
-    background-color: #b30000;
-    color: #ffffff;
-    text-decoration: none;
-    font-size: 1.05rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    border-radius: 2px;
-    transition: background-color 0.3s, transform 0.2s;
-}
-
-.btn:hover {
-    background-color: #d10000;
-    transform: translateY(-2px);
-}
-
-section {
-    padding: 8rem 10%;
-    min-height: 60vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.section-title {
-    font-size: 3.5rem;
-    margin-bottom: 2rem;
-    text-transform: uppercase;
-    border-bottom: 5px solid;
-    display: inline-block;
-    padding-bottom: 0.5rem;
-    align-self: flex-start;
-}
-
-#about {
-    background-color: var(--color-2);
-    color: var(--color-1);
-}
-
-#about .section-title {
-    color: var(--color-1);
-    border-color: var(--color-3);
-}
-
-#about p {
-    font-size: 1.2rem;
-    line-height: 1.8;
     max-width: 800px;
 }
 
-#download {
-    background-color: var(--color-3);
-    color: var(--color-5);
+.hero-content h1 {
+    font-size: 6rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 1rem;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    line-height: 1.1;
 }
 
-#download .section-title {
+.hero-content p {
+    font-size: 1.5rem;
+    color: var(--color-5);
+    margin-bottom: 3rem;
+    font-weight: 400;
+    letter-spacing: 1px;
+}
+
+/* 버튼: 둥근 모서리와 그라데이션 제거, 직관적인 평면 디자인 */
+.btn {
+    display: inline-block;
+    padding: 1rem 3rem;
+    background-color: var(--color-4);
+    color: var(--color-1);
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border: 2px solid var(--color-4);
+    transition: all 0.3s;
+}
+
+.btn:hover {
+    background-color: transparent;
     color: var(--color-4);
-    border-color: var(--color-4);
 }
 
-#download p {
-    margin-bottom: 2rem;
+/* 일반 섹션 레이아웃: 블록 형태의 구조 강조 */
+section {
+    padding: 6rem 10%;
+    min-height: 50vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-bottom: 1px solid var(--color-3);
 }
 
-.download-btn {
+/* 섹션 제목: 칼라시니코프 사이트 특유의 짧은 강조선 사용 */
+.section-title {
+    font-size: 3rem;
+    margin-bottom: 3rem;
+    text-transform: uppercase;
+    color: #ffffff;
+    letter-spacing: 2px;
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background-color: var(--color-4);
+}
+
+#company {
     background-color: var(--color-1);
+}
+
+#company p {
+    font-size: 1.2rem;
+    max-width: 900px;
+    margin-bottom: 1.5rem;
     color: var(--color-5);
 }
 
-@media (max-width: 768px) {
-    #navbar {
-        padding: 1rem 1.5rem;
-    }
-
-    .logo {
-        font-size: 1.6rem;
-    }
-
-    .nav-links {
-        gap: 1.2rem;
-    }
-
-    .nav-links a {
-        font-size: 0.9rem;
-    }
-
-    .hero {
-        padding: 0 5%;
-    }
-
-    .hero-content {
-        padding: 2rem;
-        max-width: 100%;
-    }
-
-    .hero-content h1 {
-        font-size: 3rem;
-    }
-
-    .hero-content p {
-        font-size: 1.1rem;
-    }
-
-    .section-title {
-        font-size: 2.4rem;
-    }
-}
 #ai-system {
     background-color: var(--color-2);
 }
 
+/* 이미지 배열: 그리드 시스템 도입 및 채도 조절 */
 .ai-container {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
-    margin-top: 30px;
+    margin-bottom: 3rem;
 }
 
 .ai-image {
     width: 100%;
-    max-width: 300px;
-    border-radius: 6px;
+    height: auto;
+    display: block;
+    border: 1px solid var(--color-3);
+    filter: grayscale(40%) contrast(110%);
+    transition: filter 0.3s;
+}
+
+.ai-image:hover {
+    filter: grayscale(0%) contrast(100%);
 }
 
 .ai-text {
-    margin-top: 40px;
-    max-width: 800px;
+    max-width: 900px;
 }
 
 .ai-text p {
     font-size: 1.2rem;
-    line-height: 1.8;
-    margin-bottom: 20px;
+    margin-bottom: 1.5rem;
+    color: #ffffff;
 }
 
 .ai-text ul {
     list-style-type: square;
-    line-height: 2;
+    margin-left: 2rem;
+    color: var(--color-4);
+}
+
+.ai-text li {
     font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: #ffffff;
 }
-img {
-    border-radius: 6px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+
+#about {
+    background-color: var(--color-1);
 }
-.btn {
-    background: linear-gradient(90deg, #00ff88, #00cc66);
-    color: black;
-    font-weight: bold;
-    letter-spacing: 1px;
+
+#about p {
+    font-size: 1.2rem;
+    max-width: 800px;
 }
