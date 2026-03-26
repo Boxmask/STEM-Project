@@ -256,3 +256,82 @@ section {
     text-transform: uppercase;
     letter-spacing: 1px;
 }
+
+/* ==========================================================================
+   6. SPECS SECTION (제원 및 성능)
+   ========================================================================== */
+#specs {
+    position: relative;
+    /* 상하단은 배경색으로 덮고 중앙부는 이미지가 투영되도록 설정 */
+    background: linear-gradient(
+        to bottom, 
+        var(--color-1) 0%, 
+        rgba(44, 46, 37, 0.4) 30%, 
+        rgba(44, 46, 37, 0.4) 70%, 
+        var(--color-1) 100%
+    ), url('APS.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: var(--color-5);
+    padding: 8rem 10%;
+    border-bottom: 1px solid var(--color-3);
+}
+
+.specs-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+    position: relative;
+    z-index: 2;
+}
+
+/* 6-1. 개요 텍스트 박스 */
+.specs-overview {
+    max-width: 800px;
+    background-color: rgba(44, 46, 37, 0.9); /* 배경 이미지 위에서 글씨가 잘 보이도록 어둡게 처리 */
+    padding: 2.5rem;
+    border-left: 5px solid var(--color-4);
+}
+
+.specs-overview h3 {
+    font-size: 1.5rem;
+    color: var(--color-4);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.specs-overview p {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+    color: #ffffff;
+}
+
+/* 6-2. 상세 제원표 */
+.specs-table {
+    width: 100%;
+    max-width: 900px;
+    border-collapse: collapse;
+    background-color: rgba(44, 46, 37, 0.9);
+}
+
+.specs-table th, .specs-table td {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--color-3);
+    text-align: left;
+    font-size: 1.1rem;
+}
+
+.specs-table th {
+    color: var(--color-4);
+    font-weight: 700;
+    width: 35%;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.specs-table td {
+    color: #ffffff;
+}
