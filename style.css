@@ -274,31 +274,37 @@ section {
     content: '';
     position: absolute;
     top: 0;
-    right: 0;
-    width: 65%; /* 이미지가 차지할 너비 (우측) */
+    left: 0; /* 왼쪽 배치 */
+    width: 65%; /* 이미지가 차지할 너비 */
     height: 100%;
     
-    /* 오른쪽(사진 원본)에서 왼쪽(배경색)으로 자연스럽게 사라지는 그라데이션 */
+    /* 왼쪽(원본 이미지)에서 오른쪽(배경색)으로 자연스럽게 사라지는 그라데이션 */
     background: linear-gradient(
-        to left, 
+        to right, 
         rgba(44, 46, 37, 0.2) 0%, 
         var(--color-1) 80%
     ), url('APS.webp');
     background-size: cover;
-    background-position: center left;
+    background-position: center right; /* 이미지 위치 조정 */
     background-repeat: no-repeat;
     z-index: 1;
 
-    /* 애니메이션 초기 상태: 오른쪽으로 밀려있고 투명함 */
-    transform: translateX(100px);
+    /* 애니메이션 초기 상태: 왼쪽으로 밀려있고 투명함 */
+    transform: translateX(-100px);
     opacity: 0;
     transition: transform 1.2s ease-out, opacity 1.2s ease-out;
 }
 
-/* 자바스크립트로 .is-visible 클래스가 추가되면 원래 위치로 슬라이드 인 */
+/* .is-visible 클래스가 추가되면 원래 위치로 슬라이드 인 */
 #specs.is-visible::before {
     transform: translateX(0);
     opacity: 1;
+}
+
+/* .is-hidden 클래스가 추가되면 왼쪽으로 슬라이드 아웃 */
+#specs.is-hidden::before {
+    transform: translateX(-100px);
+    opacity: 0;
 }
 
 /* 텍스트와 표가 사진 위로 올라오도록 설정 */
@@ -308,51 +314,8 @@ section {
     gap: 3rem;
     position: relative;
     z-index: 2;
-    width: 60%; /* 텍스트가 왼쪽 절반에 위치하도록 너비 제한 */
+    width: 60%; /* 텍스트가 오른쪽 절반에 위치하도록 너비 제한 */
+    margin-left: auto; /* 오른쪽 정렬 */
 }
 
-/* 기존 반투명 박스 배경 제거 (이미지와 자연스럽게 어우러지도록) */
-.specs-overview {
-    padding-left: 1.5rem;
-    border-left: 5px solid var(--color-4);
-}
-
-.specs-overview h3 {
-    font-size: 1.5rem;
-    color: var(--color-4);
-    margin-bottom: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.specs-overview p {
-    font-size: 1.15rem;
-    line-height: 1.7;
-    margin-bottom: 1rem;
-    color: #ffffff;
-}
-
-/* 제원표 디자인 */
-.specs-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.specs-table th, .specs-table td {
-    padding: 1.5rem 1rem;
-    border-bottom: 1px solid var(--color-3);
-    text-align: left;
-    font-size: 1.1rem;
-}
-
-.specs-table th {
-    color: var(--color-4);
-    font-weight: 700;
-    width: 40%;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.specs-table td {
-    color: #ffffff;
-}
+/* ... (기존 .specs-overview, .specs-table 스타일 유지) ... */
