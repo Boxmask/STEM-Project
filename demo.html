@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zontik-1 | Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 데모 전용 CSS */
+        body { background-color: #000; color: #0f0; font-family: monospace; }
+        #demo-container { margin: 8rem auto 2rem; width: 90%; max-width: 1000px; border: 2px solid #333; }
+        
+        .demo-nav { display: flex; background: #222; padding: 10px; }
+        .demo-nav button { background: #444; color: #fff; border: none; padding: 10px 20px; margin-right: 10px; cursor: pointer; font-family: 'Jost', sans-serif; text-transform: uppercase; }
+        .demo-nav button.active { background: #8B7F57; }
+        
+        .view-screen { height: 500px; padding: 20px; display: none; background: #111; position: relative; overflow: hidden; }
+        .view-screen.active { display: block; }
+        
+        /* 카메라 화면 (가상의 타겟 박스) */
+        #camera-view { background: url('APS.webp') center/cover; }
+        .target-box { position: absolute; border: 2px solid red; width: 50px; height: 50px; top: 40%; left: 30%; }
+        .target-label { color: red; background: rgba(0,0,0,0.7); font-size: 0.8rem; position: absolute; top: -20px; left: 0; white-space: nowrap; }
+        
+        /* 로그 화면 */
+        #log-view { overflow-y: scroll; color: #0f0; }
+        .log-entry { margin-bottom: 8px; border-bottom: 1px dashed #333; padding-bottom: 4px; }
+        .log-time { color: #888; margin-right: 10px; }
+        .log-alert { color: red; }
+        .log-success { color: #0f0; }
+    </style>
+</head>
+<body>
+    <nav id="navbar" style="background-color: #2C2E25;">
+        <div class="logo">ZONT</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Back to Home</a></li>
+        </ul>
+    </nav>
+
+    <div id="demo-container">
+        <div class="demo-nav">
+            <button id="btn-camera" class="active">Camera View</button>
+            <button id="btn-log">Combat Log</button>
+        </div>
+
+        <div id="camera-view" class="view-screen active">
+            <div style="color: #fff; background: rgba(0,0,0,0.5); padding: 5px; display: inline-block;">OPTICAL SENSOR: ONLINE</div>
+            <div class="target-box">
+                <div class="target-label">ID: ATGM (HOSTILE)</div>
+            </div>
+        </div>
+
+        <div id="log-view" class="view-screen">
+            <div>SYSTEM INITIALIZED...</div>
+            <div id="log-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // 1. 화면 전환 기능
+        const btnCamera = document.getElementById('btn-camera');
+        const btnLog = document.getElementById('btn-log');
+        const viewCamera = document.getElementById('camera-view');
+        const viewLog = document.getElementById('log-view');
+
+        btnCamera.addEventListener('click', () => {
+            btnCamera.classList.add('active'); btnLog.classList.remove('active');
+            viewCamera.classList.add('active'); viewLog.classList.remove('active');
+        });
+
+        btnLog.addEventListener('click', () => {
+            btnLog.classList.add('active'); btnCamera.classList.remove('active');
+            viewLog.classList.add('active'); viewCamera.classList.remove('active');
+        });
+
+        // 2. 가상 로그 생성 기능
+        const logContent = document.getElementById('log-content');
+        const threats = ['ATGM', 'RPG-7', 'Loitering Munition'];
+        
+        setInterval(() => {
+            const now = new Date();
+            const timeStr = now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
+            const randomThreat = threats[Math.floor(Math.random() * threats.length)];
+            const isSuccess = Math.random() > 0.1; // 90% 요격 성공 확률
+
+            let logHtml = `<div class="log-entry">
+                <span class="log-time">[${timeStr}]</span>
+                <span class="log-alert">WARNING: INCOMING ${randomThreat} DETECTED.</span><br>
+                <span>AZIMUTH: ${Math.floor(Math.random() * 360)}° | DISTANCE: ${Math.floor(Math.random() * 800) + 100}m</span><br>
+                <span>INTERCEPTOR DEPLOYED... </span>`;
+            
+            if (isSuccess) {
+                logHtml += `<span class="log-success">THREAT NEUTRALIZED.</span>`;
+            } else {
+                logHtml += `<span class="log-alert">INTERCEPT FAILED. BRACE.</span>`;
+            }
+            logHtml += `</div>`;
+
+            logContent.innerHTML = logHtml + logContent.innerHTML; // 새 로그를 위에 추가
+        }, 3500); // 3.5초마다 실행
+    </script>
+</body>
+</html>
