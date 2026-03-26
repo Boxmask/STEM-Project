@@ -33,3 +33,27 @@ window.addEventListener("scroll", () => {
         navbar.style.borderBottom = 'none';
     }
 });
+
+// 스크롤 시 Specs 섹션 슬라이드 애니메이션 실행
+const specsSection = document.getElementById('specs');
+
+const observerOptions = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 0.3 // 섹션이 화면에 30% 이상 보일 때 작동
+};
+
+const observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            // 화면에 나타나면 클래스 추가하여 애니메이션 트리거
+            entry.target.classList.add('is-visible');
+            // 한 번 실행된 후에는 다시 실행되지 않도록 관찰 해제
+            observer.unobserve(entry.target);
+        }
+    });
+}, observerOptions);
+
+if (specsSection) {
+    observer.observe(specsSection);
+}
