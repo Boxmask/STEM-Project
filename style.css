@@ -216,3 +216,30 @@ section {
     font-size: 1.2rem;
     max-width: 800px;
 }
+
+/* 제원표(Table) 바우하우스 디자인 */
+#specs {
+    background-color: var(--color-1);
+    color: var(--color-5);
+}
+
+.specs-table {
+    width: 100%;
+    max-width: 800px;
+    border-collapse: collapse;
+    margin-top: 2rem;
+}
+
+.specs-table th, .specs-table td {
+    padding: 1.5rem 1rem;
+    border-bottom: 2px solid var(--color-3);
+    text-align: left;
+    font-size: 1.2rem;
+}
+
+.specs-table th {
+    color: var(--color-4);
+    font-weight: 700;
+    width: 40%;
+    text-transform: uppercase;
+}
