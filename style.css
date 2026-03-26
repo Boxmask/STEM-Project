@@ -226,16 +226,16 @@ section {
 /* 5-3. About 섹션 */
 #about {
     background-color: var(--color-2);
-    color: var(--color-1);
+    color: #ffffff; /* 본문 텍스트 색상을 흰색으로 변경 */
 }
 
 #about .section-title {
-    color: var(--color-1);
+    color: #ffffff; /* 큰 제목 색상을 흰색으로 변경 */
 }
 
-/* 오류 수정: About 섹션 제목 아래의 선 색상 변경 */
+/* 밑줄 색상은 흰색 글씨와 잘 어울리도록 기존 var(--color-4) 계열로 맞추거나 밝게 유지합니다 */
 #about .section-title::after {
-    background-color: var(--color-3);
+    background-color: var(--color-4);
 }
 
 .about-text-container {
@@ -252,7 +252,7 @@ section {
     font-size: 1.8rem;
     margin-top: 3.5rem;
     margin-bottom: 1rem;
-    color: var(--color-1);
+    color: #ffffff; /* 소제목 색상을 흰색으로 변경 */
     text-transform: uppercase;
     letter-spacing: 1px;
 }
