@@ -1,4 +1,6 @@
-/* 색상 팔레트 유지 */
+/* ==========================================================================
+   1. VARIABLES & RESET (변수 및 초기화)
+   ========================================================================== */
 :root {
     --color-1: #2C2E25;
     --color-2: #50543D;
@@ -21,13 +23,70 @@ body, html {
     line-height: 1.6;
 }
 
-/* 네비게이션: 어둡고 직선적인 상단 바 */
+/* ==========================================================================
+   2. TYPOGRAPHY & UI ELEMENTS (공통 레이아웃 및 UI 요소)
+   ========================================================================== */
+/* 섹션 공통 레이아웃: 블록 형태의 구조 강조 */
+section {
+    padding: 6rem 10%;
+    min-height: 50vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-bottom: 1px solid var(--color-3);
+}
+
+/* 공통 섹션 제목: 칼라시니코프 사이트 특유의 짧은 강조선 사용 */
+.section-title {
+    font-size: 3rem;
+    margin-bottom: 3rem;
+    text-transform: uppercase;
+    color: #ffffff;
+    letter-spacing: 2px;
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background-color: var(--color-4);
+}
+
+/* 공통 버튼: 둥근 모서리와 그라데이션 제거, 직관적인 평면 디자인 */
+.btn {
+    display: inline-block;
+    padding: 1rem 3rem;
+    background-color: var(--color-4);
+    color: var(--color-1);
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border: 2px solid var(--color-4);
+    transition: all 0.3s;
+}
+
+.btn:hover {
+    background-color: transparent;
+    color: var(--color-4);
+}
+
+/* ==========================================================================
+   3. NAVIGATION BAR (가이드바)
+   ========================================================================== */
+/* 어둡고 직선적인 상단 바 */
 #navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem 4rem;
-    background-color: rgba(44, 46, 37, 0.95); /* 반투명한 어두운 배경 */
+    background-color: rgba(44, 46, 37, 0.95);
     position: fixed;
     width: 100%;
     top: 0;
@@ -62,7 +121,10 @@ body, html {
     color: #ffffff;
 }
 
-/* 히어로 섹션: 시각적 무게감과 굵은 타이포그래피 */
+/* ==========================================================================
+   4. HERO SECTION (메인 최상단 화면)
+   ========================================================================== */
+/* 시각적 무게감과 굵은 타이포그래피 */
 .hero {
     height: 100vh;
     display: flex;
@@ -99,57 +161,10 @@ body, html {
     letter-spacing: 1px;
 }
 
-/* 버튼: 둥근 모서리와 그라데이션 제거, 직관적인 평면 디자인 */
-.btn {
-    display: inline-block;
-    padding: 1rem 3rem;
-    background-color: var(--color-4);
-    color: var(--color-1);
-    text-decoration: none;
-    font-size: 1.1rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    border: 2px solid var(--color-4);
-    transition: all 0.3s;
-}
-
-.btn:hover {
-    background-color: transparent;
-    color: var(--color-4);
-}
-
-/* 일반 섹션 레이아웃: 블록 형태의 구조 강조 */
-section {
-    padding: 6rem 10%;
-    min-height: 50vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    border-bottom: 1px solid var(--color-3);
-}
-
-/* 섹션 제목: 칼라시니코프 사이트 특유의 짧은 강조선 사용 */
-.section-title {
-    font-size: 3rem;
-    margin-bottom: 3rem;
-    text-transform: uppercase;
-    color: #ffffff;
-    letter-spacing: 2px;
-    position: relative;
-    padding-bottom: 1rem;
-}
-
-.section-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 60px;
-    height: 4px;
-    background-color: var(--color-4);
-}
-
+/* ==========================================================================
+   5. SPECIFIC SECTIONS (개별 섹션 상세 설정)
+   ========================================================================== */
+/* 5-1. Company 섹션 */
 #company {
     background-color: var(--color-1);
 }
@@ -161,11 +176,11 @@ section {
     color: var(--color-5);
 }
 
+/* 5-2. AI System 섹션 */
 #ai-system {
     background-color: var(--color-2);
 }
 
-/* 이미지 배열: 그리드 시스템 도입 및 채도 조절 */
 .ai-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -208,7 +223,7 @@ section {
     color: #ffffff;
 }
 
-/* About 섹션 및 장문 텍스트 포맷팅 */
+/* 5-3. About 섹션 */
 #about {
     background-color: var(--color-2);
     color: var(--color-1);
@@ -216,7 +231,11 @@ section {
 
 #about .section-title {
     color: var(--color-1);
-    border-color: var(--color-3);
+}
+
+/* 오류 수정: About 섹션 제목 아래의 선 색상 변경 */
+#about .section-title::after {
+    background-color: var(--color-3);
 }
 
 .about-text-container {
