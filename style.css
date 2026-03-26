@@ -258,39 +258,62 @@ section {
 }
 
 /* ==========================================================================
-   6. SPECS SECTION (제원 및 성능)
+   6. SPECS SECTION (슬라이드 애니메이션 및 측면 그라데이션 적용)
    ========================================================================== */
 #specs {
     position: relative;
-    /* 상하단은 배경색으로 덮고 중앙부는 이미지가 투영되도록 설정 */
-    background: linear-gradient(
-        to bottom, 
-        var(--color-1) 0%, 
-        rgba(44, 46, 37, 0.4) 30%, 
-        rgba(44, 46, 37, 0.4) 70%, 
-        var(--color-1) 100%
-    ), url('APS.webp');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    background-color: var(--color-1); /* 전체 기본 배경색 */
     color: var(--color-5);
     padding: 8rem 10%;
     border-bottom: 1px solid var(--color-3);
+    overflow: hidden; /* 이미지가 영역 밖으로 튀어나가는 것을 방지 */
 }
 
+/* 배경 이미지 및 그라데이션 덮개 (가상 요소 사용) */
+#specs::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 65%; /* 이미지가 차지할 너비 (우측) */
+    height: 100%;
+    
+    /* 오른쪽(사진 원본)에서 왼쪽(배경색)으로 자연스럽게 사라지는 그라데이션 */
+    background: linear-gradient(
+        to left, 
+        rgba(44, 46, 37, 0.2) 0%, 
+        var(--color-1) 80%
+    ), url('APS.webp');
+    background-size: cover;
+    background-position: center left;
+    background-repeat: no-repeat;
+    z-index: 1;
+
+    /* 애니메이션 초기 상태: 오른쪽으로 밀려있고 투명함 */
+    transform: translateX(100px);
+    opacity: 0;
+    transition: transform 1.2s ease-out, opacity 1.2s ease-out;
+}
+
+/* 자바스크립트로 .is-visible 클래스가 추가되면 원래 위치로 슬라이드 인 */
+#specs.is-visible::before {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+/* 텍스트와 표가 사진 위로 올라오도록 설정 */
 .specs-content {
     display: flex;
     flex-direction: column;
     gap: 3rem;
     position: relative;
     z-index: 2;
+    width: 60%; /* 텍스트가 왼쪽 절반에 위치하도록 너비 제한 */
 }
 
-/* 6-1. 개요 텍스트 박스 */
+/* 기존 반투명 박스 배경 제거 (이미지와 자연스럽게 어우러지도록) */
 .specs-overview {
-    max-width: 800px;
-    background-color: rgba(44, 46, 37, 0.9); /* 배경 이미지 위에서 글씨가 잘 보이도록 어둡게 처리 */
-    padding: 2.5rem;
+    padding-left: 1.5rem;
     border-left: 5px solid var(--color-4);
 }
 
@@ -309,16 +332,14 @@ section {
     color: #ffffff;
 }
 
-/* 6-2. 상세 제원표 */
+/* 제원표 디자인 */
 .specs-table {
     width: 100%;
-    max-width: 900px;
     border-collapse: collapse;
-    background-color: rgba(44, 46, 37, 0.9);
 }
 
 .specs-table th, .specs-table td {
-    padding: 1.5rem 2rem;
+    padding: 1.5rem 1rem;
     border-bottom: 1px solid var(--color-3);
     text-align: left;
     font-size: 1.1rem;
@@ -327,7 +348,7 @@ section {
 .specs-table th {
     color: var(--color-4);
     font-weight: 700;
-    width: 35%;
+    width: 40%;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
