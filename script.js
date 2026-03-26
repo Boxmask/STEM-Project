@@ -40,16 +40,24 @@ const specsSection = document.getElementById('specs');
 const observerOptions = {
     root: null,
     rootMargin: '0px',
-    threshold: 0.3 // 섹션이 화면에 30% 이상 보일 때 작동
+    threshold: [0.3, 0.66] // 30% 보일 때, 66% 보일 때 감지
 };
 
 const observer = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
-            // 화면에 나타나면 클래스 추가하여 애니메이션 트리거
-            entry.target.classList.add('is-visible');
-            // 한 번 실행된 후에는 다시 실행되지 않도록 관찰 해제
-            observer.unobserve(entry.target);
+            if (entry.intersectionRatio >= 0.3 && entry.intersectionRatio < 0.66) {
+                // 30% 이상 보이면 슬라이드 인
+                entry.target.classList.remove('is-hidden');
+                entry.target.classList.add('is-visible');
+            } else if (entry.intersectionRatio >= 0.66) {
+                // 66% 이상 지나가면 슬라이드 아웃
+                entry.target.classList.remove('is-visible');
+                entry.target.classList.add('is-hidden');
+            }
+        } else {
+            // 완전히 화면에서 벗어나면 초기 상태로 리셋
+            entry.target.classList.remove('is-visible', 'is-hidden');
         }
     });
 }, observerOptions);
