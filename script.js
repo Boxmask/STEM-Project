@@ -48,12 +48,12 @@ const observer = new IntersectionObserver((entries, observer) => {
         if (entry.isIntersecting) {
             if (entry.intersectionRatio >= 0.3 && entry.intersectionRatio < 0.66) {
                 // 30% 이상 보이면 슬라이드 인
-                entry.target.classList.remove('is-hidden');
-                entry.target.classList.add('is-visible');
-            } else if (entry.intersectionRatio >= 0.66) {
-                // 66% 이상 지나가면 슬라이드 아웃
                 entry.target.classList.remove('is-visible');
                 entry.target.classList.add('is-hidden');
+            } else if (entry.intersectionRatio >= 0.66) {
+                // 66% 이상 지나가면 슬라이드 아웃
+                 entry.target.classList.remove('is-hidden');
+                entry.target.classList.add('is-visible');
             }
         } else {
             // 완전히 화면에서 벗어나면 초기 상태로 리셋
