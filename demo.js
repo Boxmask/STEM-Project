@@ -75,33 +75,22 @@ setInterval(() => {
 }, 3500);
 
 // =========================================
-// 비선형 크기 증가(커브) 동적 시뮬레이션 로직
+// 동적 시뮬레이션 및 스폰 포인트 로직
 // =========================================
 
-// 추출한 좌표와 다각형 데이터
+// 추출한 목표 좌표 및 스폰 포인트 데이터 (초기값)
 let targetPixelX = 1009;
 let targetPixelY = 761;
 
-const RESTRICTED_POLY = [
-    { id: 'A', x: 675, y: 644 },
-    { id: 'B', x: 382, y: 860 },
-    { id: 'C', x: 1554, y: 863 },
-    { id: 'D', x: 1555, y: 732 },
-    { id: 'E', x: 1348, y: 638 },
-    { id: 'F', x: 990, y: 623 },
+const SPAWN_POINTS_FPV = [
+    { id: 'F1', x: 200, y: 150 },
+    { id: 'F2', x: 800, y: 150 }
 ];
 
-// 다각형 내부 검사 알고리즘 (Ray-Casting)
-function isRestricted(x, y) {
-    let inside = false;
-    for (let i = 0, j = RESTRICTED_POLY.length - 1; i < RESTRICTED_POLY.length; j = i++) {
-        let xi = RESTRICTED_POLY[i].x, yi = RESTRICTED_POLY[i].y;
-        let xj = RESTRICTED_POLY[j].x, yj = RESTRICTED_POLY[j].y;
-        let intersect = ((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-        if (intersect) inside = !inside;
-    }
-    return inside;
-}
+const SPAWN_POINTS_RPG = [
+    { id: 'R1', x: 150, y: 600 },
+    { id: 'R2', x: 1200, y: 600 }
+];
 
 const targetBox = document.getElementById('target-box'); 
 const targetLabel = document.getElementById('target-label');
@@ -112,18 +101,19 @@ const rpgProjectileBox = document.getElementById('rpg-projectile-box');
 const MAX_SIZE = 20; 
 
 function spawnFPV() {
-    let startX, startY;
+    if (SPAWN_POINTS_FPV.length === 0) return;
 
-    do {
-        startX = window.innerWidth * ((20 + Math.random() * 60) / 100);
-        startY = window.innerHeight * ((2 + Math.random() * 10) / 100); 
-    } while (isRestricted(startX, startY));
+    // 등록된 FPV 스폰 포인트 중 무작위 하나 선택
+    let spawnNode = SPAWN_POINTS_FPV[Math.floor(Math.random() * SPAWN_POINTS_FPV.length)];
+    let startX = spawnNode.x;
+    let startY = spawnNode.y;
     
     let timeTick = 0; 
 
     targetBox.style.left = startX + 'px';
     targetBox.style.top = startY + 'px';
     targetBox.style.width = '0%'; 
+    targetBox.style.transform = 'translate(-50%, -50%)'; // 중심점 정렬 보정
     targetBox.style.display = 'block';
     targetLabel.innerText = 'ID: FPV (HOSTILE)';
 
@@ -152,33 +142,25 @@ function spawnFPV() {
 }
 
 function spawnTerroristAndRPG() {
-    let gunnerSize = 5; 
-    let startX, startY;
-    
-    do {
-        let isLeft = Math.random() > 0.5;
-        let startPercentX = isLeft ? 5 + Math.random() * 15 : 80 + Math.random() * 15;
-        let startPercentY = 40 + Math.random() * 15;
+    if (SPAWN_POINTS_RPG.length === 0) return;
 
-        startX = window.innerWidth * (startPercentX / 100);
-        startY = window.innerHeight * (startPercentY / 100);
-    } while (isRestricted(startX, startY));
+    // 등록된 RPG 사수 스폰 포인트 중 무작위 하나 선택
+    let spawnNode = SPAWN_POINTS_RPG[Math.floor(Math.random() * SPAWN_POINTS_RPG.length)];
+    let startX = spawnNode.x;
+    let startY = spawnNode.y;
 
-    // 1. 초기 상태 설정: 왼쪽(-50px)에서 투명하게 대기
     rpgGunnerBox.style.transition = 'none'; 
     rpgGunnerBox.className = 'rpg-gunner-box fade-left'; 
     
     rpgGunnerBox.style.display = 'block';
-    rpgGunnerBox.style.width = gunnerSize + '%';
+    rpgGunnerBox.style.width = '5%';
     rpgGunnerBox.style.height = 'auto';
     rpgGunnerBox.style.left = startX + 'px';
     rpgGunnerBox.style.top = startY + 'px';
     rpgGunnerLabel.innerText = 'ID: RPG GUNNER (HOSTILE)';
 
-    // 브라우저 렌더링 동기화
     void rpgGunnerBox.offsetWidth;
 
-    // 2. 화면에 등장: 제자리(0px)로 오면서 선명하게 페이드 인
     rpgGunnerBox.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
     rpgGunnerBox.classList.remove('fade-left');
     rpgGunnerBox.classList.add('fade-center');
@@ -188,15 +170,14 @@ function spawnTerroristAndRPG() {
 
         rpgProjectileBox.style.left = startX + 'px';
         rpgProjectileBox.style.top = startY + 'px';
-        rpgProjectileBox.style.width = gunnerSize + '%';
+        rpgProjectileBox.style.width = '5%';
+        rpgProjectileBox.style.transform = 'translate(-50%, -50%)'; // 중심점 정렬 보정
         rpgProjectileBox.style.display = 'block';
 
-        // 3. 발사 후 퇴장: 오른쪽(50px)으로 밀려나며 투명하게 페이드 아웃
         setTimeout(() => {
             rpgGunnerBox.classList.remove('fade-center');
             rpgGunnerBox.classList.add('fade-right');
             
-            // 애니메이션 종료 시간(0.5초)에 맞춰 화면에서 완전히 숨김
             setTimeout(() => {
                 rpgGunnerBox.style.display = 'none';
             }, 500); 
@@ -206,7 +187,7 @@ function spawnTerroristAndRPG() {
             timeTick += 0.035; 
             if (timeTick > 1) timeTick = 1;
 
-            let projSize = gunnerSize + (MAX_SIZE - gunnerSize) * Math.pow(timeTick, 1.5);
+            let projSize = 5 + (MAX_SIZE - 5) * Math.pow(timeTick, 1.5);
 
             let currentX = startX + (targetPixelX - startX) * timeTick;
             let currentY = startY + (targetPixelY - startY) * timeTick;
@@ -227,7 +208,6 @@ function spawnTerroristAndRPG() {
     }, 500); 
 }
 
-// [복구됨] 랜덤 스폰 함수
 function spawnRandomThreat() {
     if (Math.random() > 0.5) {
         spawnFPV();
@@ -239,110 +219,107 @@ function spawnRandomThreat() {
 setTimeout(spawnRandomThreat, 1000);
 
 // =========================================================================
-// [디버그 모드 시작] - 다각형 에디터 및 목표 설정 툴 포함
+// [디버그 모드 시작] - 스폰 포인트 관리 툴
 // =========================================================================
 
 const editorHTML = `
 <div id="zone-editor-ui" style="position:fixed; bottom:10px; left:10px; background:rgba(0,0,0,0.8); color:white; padding:15px; z-index:10000; font-family:monospace;">
-    <strong>[디버그 툴: 구역 & 목표 설정]</strong><br>
-    - 빨간 네모: 스폰 금지 구역 점 (드래그)<br>
+    <strong>[디버그 툴: 스폰 포인트 설정]</strong><br>
+    - 노란 원: FPV 드론 스폰 (드래그)<br>
+    - 주황 사각형: RPG 사수 스폰 (드래그)<br>
     - 파란 원: 투사체 목표 지점 (드래그)<br><br>
-    <button id="btn-add-point" style="padding:5px 10px; cursor:pointer; background:#444; color:white; border:1px solid #777;">점 추가 (+)</button>
+    <button id="btn-add-fpv" style="padding:5px 10px; cursor:pointer; background:#880; color:white; border:1px solid yellow;">+ FPV 스폰</button>
+    <button id="btn-add-rpg" style="padding:5px 10px; cursor:pointer; background:#840; color:white; border:1px solid orange;">+ RPG 스폰</button>
     <button id="btn-solve" style="padding:5px 10px; cursor:pointer; background:#050; color:white; border:1px solid lime;">SOLVE (코드 생성)</button><br><br>
     <textarea id="output-code" rows="12" cols="60" style="background:#222; color:lime; border:1px solid #555;"></textarea>
 </div>
-<svg id="zone-svg" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9998;">
-    <polygon id="zone-polygon" points="" style="fill:rgba(255,0,0,0.3); stroke:red; stroke-width:2;"></polygon>
-</svg>
 `;
 document.body.insertAdjacentHTML('beforeend', editorHTML);
 
-const corners = RESTRICTED_POLY; 
-const handles = [];
-let dragIndex = -1;
-let isDraggingTarget = false;
-let nextPointChar = 69; // 'E'의 아스키 코드 시작점
+let dragTarget = null; // 현재 드래그 중인 포인트 객체 정보
+let nextFpvId = 3;
+let nextRpgId = 3;
 
-let targetHandle = document.createElement('div');
-targetHandle.style.cssText = `position:fixed; width:20px; height:20px; background:blue; border-radius:50%; border:2px solid white; cursor:move; z-index:9999; transform:translate(-50%, -50%);`;
-targetHandle.style.left = targetPixelX + 'px';
-targetHandle.style.top = targetPixelY + 'px';
-targetHandle.title = '투사체 목표 지점';
+// 목표 지점 핸들 생성
+let targetPt = { id: 'TARGET', x: targetPixelX, y: targetPixelY, type: 'TARGET' };
+createHandle(targetPt);
 
-targetHandle.addEventListener('mousedown', () => {
-    isDraggingTarget = true;
-});
-document.body.appendChild(targetHandle);
+// 초기 스폰 포인트 핸들 생성
+SPAWN_POINTS_FPV.forEach(pt => createHandle({...pt, type: 'FPV'}));
+SPAWN_POINTS_RPG.forEach(pt => createHandle({...pt, type: 'RPG'}));
 
-function createHandle(corner, index) {
+function createHandle(pt) {
     let handle = document.createElement('div');
-    handle.style.cssText = `position:fixed; width:16px; height:16px; background:red; border:2px solid white; cursor:move; z-index:9999; transform:translate(-50%, -50%);`;
-    handle.style.left = corner.x + 'px';
-    handle.style.top = corner.y + 'px';
-    handle.title = corner.id;
-    
+    handle.style.cssText = `position:fixed; cursor:move; z-index:9999; transform:translate(-50%, -50%); border:2px solid black;`;
+    handle.style.left = pt.x + 'px';
+    handle.style.top = pt.y + 'px';
+    handle.title = pt.id;
+
+    if (pt.type === 'FPV') {
+        handle.style.width = '16px'; handle.style.height = '16px';
+        handle.style.background = 'yellow'; handle.style.borderRadius = '50%';
+    } else if (pt.type === 'RPG') {
+        handle.style.width = '16px'; handle.style.height = '16px';
+        handle.style.background = 'orange';
+    } else if (pt.type === 'TARGET') {
+        handle.style.width = '20px'; handle.style.height = '20px';
+        handle.style.background = 'blue'; handle.style.borderRadius = '50%';
+        handle.style.border = '2px solid white';
+    }
+
     handle.addEventListener('mousedown', (e) => {
-        dragIndex = corners.indexOf(corner); 
+        dragTarget = { point: pt, element: handle };
     });
     
     document.body.appendChild(handle);
-    handles.push(handle);
 }
 
-corners.forEach((corner, index) => {
-    createHandle(corner, index);
+// 점 추가 버튼 이벤트
+document.getElementById('btn-add-fpv').addEventListener('click', () => {
+    let newPt = { id: 'F' + (nextFpvId++), x: window.innerWidth / 2, y: window.innerHeight / 2, type: 'FPV' };
+    SPAWN_POINTS_FPV.push(newPt);
+    createHandle(newPt);
 });
 
-document.getElementById('btn-add-point').addEventListener('click', () => {
-    let newId = String.fromCharCode(nextPointChar++); 
-    let newX = window.innerWidth / 2; 
-    let newY = window.innerHeight / 2;
-    
-    let newCorner = { id: newId, x: newX, y: newY };
-    corners.push(newCorner); 
-    createHandle(newCorner, corners.length - 1); 
-    drawPolygon(); 
+document.getElementById('btn-add-rpg').addEventListener('click', () => {
+    let newPt = { id: 'R' + (nextRpgId++), x: window.innerWidth / 2, y: window.innerHeight / 2, type: 'RPG' };
+    SPAWN_POINTS_RPG.push(newPt);
+    createHandle(newPt);
 });
 
+// 드래그 조작 연동
 document.addEventListener('mousemove', (e) => {
-    if (dragIndex !== -1) {
-        corners[dragIndex].x = e.pageX;
-        corners[dragIndex].y = e.pageY;
-        handles[dragIndex].style.left = e.pageX + 'px';
-        handles[dragIndex].style.top = e.pageY + 'px';
-        drawPolygon();
-    } 
-    else if (isDraggingTarget) {
-        targetPixelX = e.pageX;
-        targetPixelY = e.pageY;
-        targetHandle.style.left = e.pageX + 'px';
-        targetHandle.style.top = e.pageY + 'px';
+    if (dragTarget) {
+        dragTarget.point.x = e.pageX;
+        dragTarget.point.y = e.pageY;
+        dragTarget.element.style.left = e.pageX + 'px';
+        dragTarget.element.style.top = e.pageY + 'px';
+
+        // 목표 지점이 변경되었을 경우 전역 변수 동기화
+        if (dragTarget.point.type === 'TARGET') {
+            targetPixelX = e.pageX;
+            targetPixelY = e.pageY;
+        }
     }
 });
 
 document.addEventListener('mouseup', () => {
-    dragIndex = -1;
-    isDraggingTarget = false;
+    dragTarget = null;
 });
 
-function drawPolygon() {
-    const polygon = document.getElementById('zone-polygon');
-    const pointsStr = corners.map(c => `${c.x},${c.y}`).join(' ');
-    polygon.setAttribute('points', pointsStr);
-}
-
-drawPolygon();
-
+// 출력 연동
 document.getElementById('btn-solve').addEventListener('click', () => {
     const output = document.getElementById('output-code');
     
     let code = `let targetPixelX = ${targetPixelX};\n`;
     code += `let targetPixelY = ${targetPixelY};\n\n`;
     
-    code += `const RESTRICTED_POLY = [\n`;
-    corners.forEach(c => {
-        code += `    { id: '${c.id}', x: ${c.x}, y: ${c.y} },\n`;
-    });
+    code += `const SPAWN_POINTS_FPV = [\n`;
+    SPAWN_POINTS_FPV.forEach(p => { code += `    { id: '${p.id}', x: ${p.x}, y: ${p.y} },\n`; });
+    code += `];\n\n`;
+
+    code += `const SPAWN_POINTS_RPG = [\n`;
+    SPAWN_POINTS_RPG.forEach(p => { code += `    { id: '${p.id}', x: ${p.x}, y: ${p.y} },\n`; });
     code += `];\n`;
 
     output.value = code;
