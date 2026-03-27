@@ -40,42 +40,98 @@ viewCamera.addEventListener('click', () => {
     }
 });
 
-// 4. 가상 로그 생성 및 포탑 각도 연동 기능
+// =========================================
+// 4. 동적 로그 생성기 및 방위각 계산 함수
+// =========================================
 const logContent = document.getElementById('log-content');
 const turretBar = document.getElementById('turret-bar');
 const azimuthVal = document.getElementById('azimuth-val');
-const threats = ['ATGM', 'RPG-7', 'Loitering Munition'];
 
-setInterval(() => {
+function updateSystemLog(threatName, startX, startY) {
     const now = new Date();
     const timeStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0') + ":" + String(now.getSeconds()).padStart(2, '0');
 
-    const randomThreat = threats[Math.floor(Math.random() * threats.length)];
-    const isSuccess = Math.random() > 0.1; 
-    const randomAzimuth = Math.floor(Math.random() * 360);
-    const randomDistance = Math.floor(Math.random() * 800) + 100;
+    let dx = startX - targetPixelX;
+    let dy = startY - targetPixelY;
+    let angle = Math.round(Math.atan2(dy, dx) * (180 / Math.PI)) + 90; 
+    if (angle < 0) angle += 360; 
+    
+    let distance = Math.round(Math.sqrt(dx * dx + dy * dy));
 
-    turretBar.style.transform = `translate(-50%, -100%) rotate(${randomAzimuth}deg)`;
-    azimuthVal.innerText = randomAzimuth;
+    turretBar.style.transform = `translate(-50%, -100%) rotate(${angle}deg)`;
+    azimuthVal.innerText = angle;
 
-    let logHtml = `<div class="log-entry">
+    let logHtml = `<div class="log-entry" id="current-log">
         <span class="log-time">[${timeStr}]</span>
-        <span class="log-alert">WARNING: INCOMING ${randomThreat} DETECTED.</span><br>
-        <span>AZIMUTH: ${randomAzimuth}° | DISTANCE: ${randomDistance}m</span><br>
-        <span>INTERCEPTOR DEPLOYED... </span>`;
+        <span class="log-alert">WARNING: INCOMING ${threatName} DETECTED.</span><br>
+        <span>AZIMUTH: ${angle}° | DISTANCE: ${distance}m</span><br>
+        <span>INTERCEPTOR DEPLOYED... </span>
+        <span class="log-result"></span>
+    </div>`;
 
-    if (isSuccess) {
-        logHtml += `<span class="log-success">THREAT NEUTRALIZED.</span>`;
-    } else {
-        logHtml += `<span class="log-alert">INTERCEPT FAILED. BRACE.</span>`;
-    }
-    logHtml += `</div>`;
+    logContent.innerHTML = logHtml + logContent.innerHTML;
+    return document.querySelector('#current-log .log-result'); 
+}
 
-    logContent.innerHTML = logHtml + logContent.innerHTML; 
-}, 3500);
+function createExplosion(x, y) {
+    let explosion = document.createElement('div');
+    explosion.className = 'explosion-effect';
+    explosion.style.left = x + 'px';
+    explosion.style.top = y + 'px';
+    document.body.appendChild(explosion);
+
+    void explosion.offsetWidth;
+    explosion.classList.add('fade');
+
+    setTimeout(() => {
+        explosion.remove();
+    }, 400);
+}
 
 // =========================================
-// 5. 동적 시뮬레이션 및 스폰 포인트 로직
+// 5. 스폰 포인트 데이터 및 HTML 요소 연결
+// =========================================
+let targetPixelX = 1009;
+let targetPixelY = 761;
+
+const SPAWN_POINTS_FPV = [
+    { id: 'F1', x: 200, y: 150 },
+    { id: 'F2', x: 800, y: 150 },
+    { id: 'F3', x: 798, y: 219 },
+    { id: 'F4', x: 1178, y: 223 },
+    { id: 'F5', x: 804, y: 322 },
+    { id: 'F6', x: 995, y: 310 },
+    { id: 'F7', x: 1167, y: 347 },
+    { id: 'F8', x: 889, y: 319 },
+    { id: 'F9', x: 695, y: 258 },
+    { id: 'F10', x: 1087, y: 413 },
+    { id: 'F11', x: 956, y: 392 },
+    { id: 'F12', x: 1091, y: 301 },
+];
+
+const SPAWN_POINTS_RPG = [
+    { id: 'R1', x: 150, y: 600 },
+    { id: 'R2', x: 1200, y: 600 },
+    { id: 'R3', x: 904, y: 554 },
+    { id: 'R4', x: 1047, y: 559 },
+    { id: 'R5', x: 617, y: 596 },
+    { id: 'R6', x: 505, y: 684 },
+    { id: 'R7', x: 1237, y: 606 },
+    { id: 'R8', x: 796, y: 563 },
+    { id: 'R9', x: 1147, y: 551 },
+    { id: 'R10', x: 981, y: 542 },
+    { id: 'R11', x: 898, y: 526 },
+];
+
+const targetBox = document.getElementById('target-box'); 
+const targetLabel = document.getElementById('target-label');
+const rpgGunnerBox = document.getElementById('rpg-gunner-box');
+const rpgGunnerLabel = document.getElementById('rpg-gunner-label');
+const rpgProjectileBox = document.getElementById('rpg-projectile-box');
+const MAX_SIZE = 20;
+
+// =========================================
+// 6. 동적 시뮬레이션 및 스폰 로직
 // =========================================
 
 function spawnFPV() {
@@ -87,8 +143,6 @@ function spawnFPV() {
     
     let timeTick = 0; 
     let isIntercepted = Math.random() <= 0.82; 
-    
-    // [수정됨] 0.5 기본값에 0~0.1 사이의 난수를 더해 50~60% 진행 구간 설정
     let interceptPoint = 0.5 + (Math.random() * 0.1); 
 
     let logResultElement = updateSystemLog('FPV LOITERING MUNITION', startX, startY);
@@ -113,7 +167,6 @@ function spawnFPV() {
         targetBox.style.left = currentX + 'px';
         targetBox.style.top = currentY + 'px';
 
-        // 82% 확률에 당첨되었고, 설정된 요격 지점(50~60%)에 도달했을 때
         if (isIntercepted && timeTick >= interceptPoint) {
             clearInterval(interval);
             targetBox.style.display = 'none';
@@ -142,8 +195,6 @@ function spawnTerroristAndRPG() {
     let startY = spawnNode.y;
 
     let isIntercepted = Math.random() <= 0.82; 
-    
-    // [수정됨] 0.5 기본값에 0~0.1 사이의 난수를 더해 50~60% 진행 구간 설정
     let interceptPoint = 0.5 + (Math.random() * 0.1); 
     
     let logResultElement = null; 
@@ -197,7 +248,6 @@ function spawnTerroristAndRPG() {
             rpgProjectileBox.style.left = currentX + 'px';
             rpgProjectileBox.style.top = currentY + 'px';
 
-            // 요격 성공 시 (50~60% 지점)
             if (isIntercepted && timeTick >= interceptPoint) {
                 clearInterval(interval);
                 rpgProjectileBox.style.display = 'none';
@@ -247,15 +297,13 @@ const editorHTML = `
 `;
 document.body.insertAdjacentHTML('beforeend', editorHTML);
 
-let dragTarget = null; // 현재 드래그 중인 포인트 객체 정보
+let dragTarget = null; 
 let nextFpvId = 3;
 let nextRpgId = 3;
 
-// 목표 지점 핸들 생성
 let targetPt = { id: 'TARGET', x: targetPixelX, y: targetPixelY, type: 'TARGET' };
 createHandle(targetPt);
 
-// 초기 스폰 포인트 핸들 생성
 SPAWN_POINTS_FPV.forEach(pt => createHandle({...pt, type: 'FPV'}));
 SPAWN_POINTS_RPG.forEach(pt => createHandle({...pt, type: 'RPG'}));
 
@@ -285,7 +333,6 @@ function createHandle(pt) {
     document.body.appendChild(handle);
 }
 
-// 점 추가 버튼 이벤트
 document.getElementById('btn-add-fpv').addEventListener('click', () => {
     let newPt = { id: 'F' + (nextFpvId++), x: window.innerWidth / 2, y: window.innerHeight / 2, type: 'FPV' };
     SPAWN_POINTS_FPV.push(newPt);
@@ -298,7 +345,6 @@ document.getElementById('btn-add-rpg').addEventListener('click', () => {
     createHandle(newPt);
 });
 
-// 드래그 조작 연동
 document.addEventListener('mousemove', (e) => {
     if (dragTarget) {
         dragTarget.point.x = e.pageX;
@@ -306,7 +352,6 @@ document.addEventListener('mousemove', (e) => {
         dragTarget.element.style.left = e.pageX + 'px';
         dragTarget.element.style.top = e.pageY + 'px';
 
-        // 목표 지점이 변경되었을 경우 전역 변수 동기화
         if (dragTarget.point.type === 'TARGET') {
             targetPixelX = e.pageX;
             targetPixelY = e.pageY;
@@ -318,7 +363,6 @@ document.addEventListener('mouseup', () => {
     dragTarget = null;
 });
 
-// 출력 연동
 document.getElementById('btn-solve').addEventListener('click', () => {
     const output = document.getElementById('output-code');
     
