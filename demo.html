@@ -20,33 +20,31 @@
         
         /* 카메라 화면 */
         #camera-view {
-            background-image: url('unnamed.jpg'); /* 배경 이미지 */
+            background-image: url('unnamed.jpg');
             background-size: cover;
             background-position: center;
             cursor: pointer; 
         }
 
         /* -----------------------------------------------------------
-           [수정 부분] IR 모드 CSS 필터 및 타겟 색상 직접 제어
+           [수정 부분] IR 모드 CSS 필터 및 타겟 박스/라벨 색상 조정 (검은색 테두리/텍스트, 흰색 하이라이트)
            ----------------------------------------------------------- */
-        /* 1. IR 모드 필터 적용 (전체 카메라 뷰 반전) */
+        /* 1. IR 모드 필터 적용 */
         #camera-view.ir-mode {
             filter: invert(100%) grayscale(100%) contrast(150%);
         }
 
-        /* 2. IR 모드일 때 타겟 라벨 및 박스 원래 색상 조정
-           전체 반전 필터에 의해 반전된 결과물이 사용자가 원하는 색상이 되도록
-           원래 색상을 조정합니다.
-           - 결과 테두리: 검은색 (#000) -> 원래 테두리: 흰색 (#fff)
-           - 결과 배경: 흰색 (#fff) -> 원래 배경: 검은색 (#000)
-           - 결과 텍스트: 검은색 (#000) -> 원래 텍스트: 흰색 (#fff) */
+        /* 2. [추가] IR 모드 타겟 박스 테두리색 조정 (흰색을 인버트해 검은색으로) */
         #camera-view.ir-mode .target-box {
-            border-color: white; /* 반전 전 흰색 -> 반전 후 검은색 테두리 */
+            border-color: white;
         }
 
+        /* 3. [수정] IR 모드 타겟 라벨 색상 조정 (인버트 고려)
+           - 텍스트(color: white): 인버트 되어 검은색으로 출력
+           - 하이라이트(background: rgba(0,0,0,0.7)): 인버트 되어 흰색으로 출력 */
         #camera-view.ir-mode .target-label {
-            color: white;         /* 반전 전 흰색 -> 반전 후 검은색 텍스트 */
-            background: black;    /* 반전 전 검은색 -> 반전 후 흰색 배경 */
+            color: white; 
+            background: rgba(0, 0, 0, 0.7);
         }
         /* ----------------------------------------------------------- */
 
@@ -193,7 +191,7 @@
                 <span class="log-time">[${timeStr}]</span>
                 <span class="log-alert">WARNING: INCOMING ${randomThreat} DETECTED.</span><br>
                 <span>AZIMUTH: ${randomAzimuth}° | DISTANCE: ${randomDistance}m</span><br>
-              <span>INTERCEPTOR DEPLOYED... </span>`;
+                <span>INTERCEPTOR DEPLOYED... </span>`;
             
             if (isSuccess) {
                 logHtml += `<span class="log-success">THREAT NEUTRALIZED.</span>`;
