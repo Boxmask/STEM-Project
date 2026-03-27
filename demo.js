@@ -75,7 +75,7 @@ setInterval(() => {
 }, 3500);
 
 // =========================================
-// 원근 기반 동적 시뮬레이션 로직
+// 원근 및 곡선(Bezier) 기반 동적 시뮬레이션 로직
 // =========================================
 const targetBox = document.getElementById('target-box'); // FPV용
 const targetLabel = document.getElementById('target-label');
@@ -83,43 +83,60 @@ const rpgGunnerBox = document.getElementById('rpg-gunner-box');
 const rpgGunnerLabel = document.getElementById('rpg-gunner-label');
 const rpgProjectileBox = document.getElementById('rpg-projectile-box');
 
-// 플레이어 방향(화면 중앙 하단) 좌표 설정
+// 플레이어 방향(화면 중앙 하단 - 빨간색 회피 구역) 좌표 설정
 const centerBottomX = 50; 
 const centerBottomY = 100;
 
 function spawnFPV() {
     let size = 0; // 크기 0에서 시작
-    // 하늘(상단 0% ~ 20%) 범위에서 무작위 스폰
-    let posX = 10 + Math.random() * 80;
-    let posY = 0 + Math.random() * 20;
+    
+    // 자주색 구역: 하늘 (상단 5% ~ 30%, 가로 20% ~ 80%)
+    let posX = 20 + Math.random() * 60;
+    let posY = 5 + Math.random() * 25;
+
+    // 곡선 궤적을 위한 2차 베지어 곡선 제어점 (P1) 설정
+    let p0 = { x: posX, y: posY };
+    let p2 = { x: centerBottomX, y: centerBottomY };
+    let p1 = {
+        x: (p0.x + p2.x) / 2 + (Math.random() * 60 - 30), // 좌우 무작위로 휘어짐
+        y: (p0.y + p2.y) / 2 - 20 // 포물선 형태를 위해 위로 휘어짐
+    };
 
     targetBox.style.display = 'block';
     targetLabel.innerText = 'ID: FPV (HOSTILE)';
 
     let interval = setInterval(() => {
-        size += 0.5; // 크기 증가
-        posX += (centerBottomX - posX) * 0.02; // 중앙 하단으로 점진적 이동
-        posY += (centerBottomY - posY) * 0.02;
+        size += 0.15; // 기존 대비 1.5배 이상 속도 감소
+        
+        // 크기 30을 기준으로 진행률 t(0~1) 계산
+        let t = size / 30; 
+        if (t > 1) t = 1;
+
+        // 베지어 곡선 공식에 따른 현재 X, Y 좌표 계산
+        let currentX = Math.pow(1-t, 2) * p0.x + 2 * (1-t) * t * p1.x + Math.pow(t, 2) * p2.x;
+        let currentY = Math.pow(1-t, 2) * p0.y + 2 * (1-t) * t * p1.y + Math.pow(t, 2) * p2.y;
 
         targetBox.style.width = size + '%';
         targetBox.style.height = 'auto'; 
-        targetBox.style.left = posX + '%';
-        targetBox.style.top = posY + '%';
+        targetBox.style.left = currentX + '%';
+        targetBox.style.top = currentY + '%';
 
-        // 크기가 100 이상이 되면 제거
-        if (size >= 100) {
+        // 투사체 크기가 30 이상이 되면 제거
+        if (size >= 30) {
             clearInterval(interval);
             targetBox.style.display = 'none';
-            setTimeout(spawnRandomThreat, 1500); // 1.5초 뒤 다음 위협
+            setTimeout(spawnRandomThreat, 1500); 
         }
     }, 30);
 }
 
 function spawnTerroristAndRPG() {
-    let gunnerSize = 5; // 테러리스트 크기
-    // 건물 주변(중간 40% ~ 60%) 범위에서 무작위 스폰
-    let posX = 10 + Math.random() * 80;
-    let posY = 40 + Math.random() * 20;
+    let gunnerSize = 5; 
+    
+    // 파란색 구역: 좌/우 건물 주변 (가로 15~35% 또는 65~85%, 세로 45~60%)
+    let isLeft = Math.random() > 0.5;
+    let posX = isLeft ? 15 + Math.random() * 20 : 65 + Math.random() * 20;
+    let posY = 45 + Math.random() * 15;
 
     rpgGunnerBox.style.display = 'block';
     rpgGunnerBox.style.width = gunnerSize + '%';
@@ -128,31 +145,39 @@ function spawnTerroristAndRPG() {
     rpgGunnerBox.style.top = posY + '%';
     rpgGunnerLabel.innerText = 'ID: RPG GUNNER (HOSTILE)';
 
-    // 규칙 1: 3초 뒤 테러리스트 사라짐
     setTimeout(() => {
         rpgGunnerBox.style.display = 'none';
     }, 3000);
 
-    // 테러리스트 생성 0.5초 뒤 탄두 발사
     setTimeout(() => {
-        let projSize = gunnerSize; // 규칙 1-i: 탄두 크기는 테러리스트 크기와 동일하게 시작
-        let projX = posX; // 테러리스트 위치에서 생성
-        let projY = posY;
+        let projSize = gunnerSize; 
+        
+        // RPG 궤적용 제어점 설정
+        let p0 = { x: posX, y: posY };
+        let p2 = { x: centerBottomX, y: centerBottomY };
+        let p1 = {
+            x: (p0.x + p2.x) / 2 + (isLeft ? 30 : -30), // 건물 바깥쪽으로 크게 곡선을 그림
+            y: p0.y - 15 // 초기 발사 시 약간 위로 솟구침
+        };
 
         rpgProjectileBox.style.display = 'block';
 
         let interval = setInterval(() => {
-            projSize += 0.8; // 탄두 이동 속도
-            projX += (centerBottomX - projX) * 0.05;
-            projY += (centerBottomY - projY) * 0.05;
+            projSize += 0.25; // 기존 대비 속도 감소
+
+            let t = (projSize - gunnerSize) / (30 - gunnerSize);
+            if (t > 1) t = 1;
+
+            let currentX = Math.pow(1-t, 2) * p0.x + 2 * (1-t) * t * p1.x + Math.pow(t, 2) * p2.x;
+            let currentY = Math.pow(1-t, 2) * p0.y + 2 * (1-t) * t * p1.y + Math.pow(t, 2) * p2.y;
 
             rpgProjectileBox.style.width = projSize + '%';
             rpgProjectileBox.style.height = 'auto';
-            rpgProjectileBox.style.left = projX + '%';
-            rpgProjectileBox.style.top = projY + '%';
+            rpgProjectileBox.style.left = currentX + '%';
+            rpgProjectileBox.style.top = currentY + '%';
 
-            // 크기가 40 이상이 되면 제거
-            if (projSize >= 40) {
+            // 투사체 크기가 30 이상이 되면 제거
+            if (projSize >= 30) {
                 clearInterval(interval);
                 rpgProjectileBox.style.display = 'none';
                 setTimeout(spawnRandomThreat, 1500);
