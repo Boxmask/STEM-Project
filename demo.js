@@ -131,54 +131,58 @@ const rpgProjectileBox = document.getElementById('rpg-projectile-box');
 const MAX_SIZE = 20;
 
 // =========================================
-// 6. 동적 시뮬레이션 및 스폰 로직
+// 6. 동적 시뮬레이션 및 스폰 로직 (정밀 보정 버전)
 // =========================================
 
 function spawnFPV() {
     if (SPAWN_POINTS_FPV.length === 0) return;
 
-    let spawnNode = SPAWN_POINTS_FPV[Math.floor(Math.random() * SPAWN_POINTS_FPV.length)];
-    let startX = spawnNode.x;
-    let startY = spawnNode.y;
+    // 선택된 스폰 포인트의 좌표를 변수에 확실히 고정
+    const spawnNode = SPAWN_POINTS_FPV[Math.floor(Math.random() * SPAWN_POINTS_FPV.length)];
+    const startX = spawnNode.x;
+    const startY = spawnNode.y;
     
     let timeTick = 0; 
-    let isIntercepted = Math.random() <= 0.82; 
-    let interceptPoint = 0.5 + (Math.random() * 0.1); 
+    const isIntercepted = Math.random() <= 0.82; 
+    const interceptPoint = 0.5 + (Math.random() * 0.1); 
 
-    let logResultElement = updateSystemLog('FPV LOITERING MUNITION', startX, startY);
+    const logResultElement = updateSystemLog('FPV LOITERING MUNITION', startX, startY);
 
-    targetBox.style.left = startX + 'px';
-    targetBox.style.top = startY + 'px';
+    // 초기 위치 강제 할당
+    targetBox.style.left = `${startX}px`;
+    targetBox.style.top = `${startY}px`;
     targetBox.style.width = '0%'; 
     targetBox.style.transform = 'translate(-50%, -50%)'; 
     targetBox.style.display = 'block';
     targetLabel.innerText = 'ID: FPV (HOSTILE)';
 
-    let interval = setInterval(() => {
+    const interval = setInterval(() => {
         timeTick += 0.008; 
         if (timeTick > 1) timeTick = 1;
 
-        let size = MAX_SIZE * Math.pow(timeTick, 1.5); 
-        let currentX = startX + (targetPixelX - startX) * timeTick;
-        let currentY = startY + (targetPixelY - startY) * timeTick;
+        const size = MAX_SIZE * Math.pow(timeTick, 1.5); 
+        // 시작점(startX, startY)을 기준으로 한 현재 위치의 절대 픽셀 계산
+        const currentX = startX + (targetPixelX - startX) * timeTick;
+        const currentY = startY + (targetPixelY - startY) * timeTick;
 
-        targetBox.style.width = size + '%';
-        targetBox.style.height = 'auto'; 
-        targetBox.style.left = currentX + 'px';
-        targetBox.style.top = currentY + 'px';
+        targetBox.style.width = `${size}%`;
+        targetBox.style.left = `${currentX}px`;
+        targetBox.style.top = `${currentY}px`;
 
+        // 요격 시점 판단
         if (isIntercepted && timeTick >= interceptPoint) {
             clearInterval(interval);
             targetBox.style.display = 'none';
+            // 계산된 현재 절대 좌표에 폭발 생성
             createExplosion(currentX, currentY); 
             logResultElement.innerHTML = `<span class="log-success">THREAT NEUTRALIZED.</span>`;
             setTimeout(spawnRandomThreat, 1500);
             return;
         }
 
-        let distance = Math.sqrt(Math.pow(targetPixelX - currentX, 2) + Math.pow(targetPixelY - currentY, 2));
+        const distance = Math.sqrt(Math.pow(targetPixelX - currentX, 2) + Math.pow(targetPixelY - currentY, 2));
 
-        if (distance <= 10 || timeTick === 1) {
+        if (distance <= 15 || timeTick === 1) {
             clearInterval(interval);
             targetBox.style.display = 'none';
             logResultElement.innerHTML = `<span class="log-alert">INTERCEPT FAILED. BRACE.</span>`;
@@ -190,76 +194,69 @@ function spawnFPV() {
 function spawnTerroristAndRPG() {
     if (SPAWN_POINTS_RPG.length === 0) return;
 
-    let spawnNode = SPAWN_POINTS_RPG[Math.floor(Math.random() * SPAWN_POINTS_RPG.length)];
-    let startX = spawnNode.x;
-    let startY = spawnNode.y;
+    const spawnNode = SPAWN_POINTS_RPG[Math.floor(Math.random() * SPAWN_POINTS_RPG.length)];
+    const startX = spawnNode.x;
+    const startY = spawnNode.y;
 
-    let isIntercepted = Math.random() <= 0.82; 
-    let interceptPoint = 0.5 + (Math.random() * 0.1); 
-    
+    const isIntercepted = Math.random() <= 0.82; 
+    const interceptPoint = 0.5 + (Math.random() * 0.1); 
     let logResultElement = null; 
 
     rpgGunnerBox.style.transition = 'none'; 
     rpgGunnerBox.className = 'rpg-gunner-box fade-left'; 
-    
     rpgGunnerBox.style.display = 'block';
     rpgGunnerBox.style.width = '5%';
-    rpgGunnerBox.style.height = 'auto';
-    rpgGunnerBox.style.left = startX + 'px';
-    rpgGunnerBox.style.top = startY + 'px';
+    rpgGunnerBox.style.left = `${startX}px`;
+    rpgGunnerBox.style.top = `${startY}px`;
     rpgGunnerLabel.innerText = 'ID: RPG GUNNER (HOSTILE)';
 
     void rpgGunnerBox.offsetWidth;
-
     rpgGunnerBox.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
     rpgGunnerBox.classList.remove('fade-left');
     rpgGunnerBox.classList.add('fade-center');
 
     setTimeout(() => {
         let timeTick = 0;
-
         logResultElement = updateSystemLog('RPG-7 WARHEAD', startX, startY);
 
-        rpgProjectileBox.style.left = startX + 'px';
-        rpgProjectileBox.style.top = startY + 'px';
+        rpgProjectileBox.style.left = `${startX}px`;
+        rpgProjectileBox.style.top = `${startY}px`;
         rpgProjectileBox.style.width = '5%';
         rpgProjectileBox.style.transform = 'translate(-50%, -50%)'; 
         rpgProjectileBox.style.display = 'block';
 
+        // 사수 퇴장 로직
         setTimeout(() => {
             rpgGunnerBox.classList.remove('fade-center');
             rpgGunnerBox.classList.add('fade-right');
-            
-            setTimeout(() => {
-                rpgGunnerBox.style.display = 'none';
-            }, 500); 
+            setTimeout(() => { rpgGunnerBox.style.display = 'none'; }, 500); 
         }, 2000);
 
-        let interval = setInterval(() => {
+        const interval = setInterval(() => {
             timeTick += 0.035; 
             if (timeTick > 1) timeTick = 1;
 
-            let projSize = 5 + (MAX_SIZE - 5) * Math.pow(timeTick, 1.5);
-            let currentX = startX + (targetPixelX - startX) * timeTick;
-            let currentY = startY + (targetPixelY - startY) * timeTick;
+            const projSize = 5 + (MAX_SIZE - 5) * Math.pow(timeTick, 1.5);
+            const currentX = startX + (targetPixelX - startX) * timeTick;
+            const currentY = startY + (targetPixelY - startY) * timeTick;
 
-            rpgProjectileBox.style.width = projSize + '%';
-            rpgProjectileBox.style.height = 'auto';
-            rpgProjectileBox.style.left = currentX + 'px';
-            rpgProjectileBox.style.top = currentY + 'px';
+            rpgProjectileBox.style.width = `${projSize}%`;
+            rpgProjectileBox.style.left = `${currentX}px`;
+            rpgProjectileBox.style.top = `${currentY}px`;
 
             if (isIntercepted && timeTick >= interceptPoint) {
                 clearInterval(interval);
                 rpgProjectileBox.style.display = 'none';
+                // 투사체의 현재 위치 좌표로 폭발 발생
                 createExplosion(currentX, currentY);
                 if(logResultElement) logResultElement.innerHTML = `<span class="log-success">THREAT NEUTRALIZED.</span>`;
                 setTimeout(spawnRandomThreat, 1500);
                 return;
             }
 
-            let distance = Math.sqrt(Math.pow(targetPixelX - currentX, 2) + Math.pow(targetPixelY - currentY, 2));
+            const distance = Math.sqrt(Math.pow(targetPixelX - currentX, 2) + Math.pow(targetPixelY - currentY, 2));
 
-            if (distance <= 10 || timeTick === 1) {
+            if (distance <= 15 || timeTick === 1) {
                 clearInterval(interval);
                 rpgProjectileBox.style.display = 'none';
                 if(logResultElement) logResultElement.innerHTML = `<span class="log-alert">INTERCEPT FAILED. BRACE.</span>`;
