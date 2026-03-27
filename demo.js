@@ -194,7 +194,7 @@ setTimeout(spawnRandomThreat, 1000);
 
 
 // =========================================================================
-// [디버그 모드 시작] - 나중에 배포 시 아래 블록만 전체 삭제 또는 주석 처리하면 됩니다.
+// [디버그 모드 시작] 
 // =========================================================================
 const debugUI = document.createElement('div');
 debugUI.style.cssText = 'position:fixed; top:10px; right:10px; background:rgba(0,0,0,0.8); color:lime; padding:10px; font-family:monospace; font-size:12px; z-index:9999; pointer-events:none; border:1px solid lime;';
@@ -204,13 +204,14 @@ let currentMouseX = 0;
 let currentMouseY = 0;
 
 document.addEventListener('mousemove', (e) => {
-    currentMouseX = e.clientX;
-    currentMouseY = e.clientY;
+    // 뷰포트(브라우저 창) 기준이 아닌 전체 문서(Document) 기준 좌표로 수정
+    currentMouseX = e.pageX;
+    currentMouseY = e.pageY;
 });
 
 setInterval(() => {
     let htmlStr = `<strong>[SYSTEM DEBUG INFO]</strong><br><br>`;
-    htmlStr += `Cursor Pos (px): X: ${currentMouseX}, Y: ${currentMouseY}<br><br>`;
+    htmlStr += `Screen Pos (px): X: ${currentMouseX}, Y: ${currentMouseY}<br><br>`; // 텍스트 수정
 
     if (targetBox.style.display === 'block') {
         htmlStr += `[FPV DRONE]<br>`;
@@ -230,6 +231,12 @@ setInterval(() => {
 
     debugUI.innerHTML = htmlStr;
 }, 50);
+
+// [디버그 모드에 추가] 스폰 금지 구역을 화면에 반투명 붉은색 박스로 표시
+const debugRestrictedZone = document.createElement('div');
+debugRestrictedZone.style.cssText = `position:fixed; left:${RESTRICTED_ZONE.xMin}px; top:${RESTRICTED_ZONE.yMin}px; width:${RESTRICTED_ZONE.xMax - RESTRICTED_ZONE.xMin}px; height:${RESTRICTED_ZONE.yMax - RESTRICTED_ZONE.yMin}px; background:rgba(255,0,0,0.2); border:1px solid red; pointer-events:none; z-index:9998;`;
+document.body.appendChild(debugRestrictedZone);
+
 // =========================================================================
 // [디버그 모드 종료]
 // =========================================================================
