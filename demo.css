@@ -1,128 +1,76 @@
-/* 기본 데모 컨테이너 레이아웃 */
-body { background-color: #000; color: #0f0; font-family: monospace; }
-#demo-container { margin: 8rem auto 2rem; width: 90%; max-width: 1200px; border: 2px solid #333; }
+function spawnTerroristAndRPG() {
+    let gunnerSize = 5; 
+    let startX, startY;
+    
+    // 금지 구역 판별 로직
+    do {
+        let isLeft = Math.random() > 0.5;
+        let startPercentX = isLeft ? 5 + Math.random() * 15 : 80 + Math.random() * 15;
+        let startPercentY = 40 + Math.random() * 15;
 
-.demo-nav { display: flex; background: #222; padding: 10px; }
-.demo-nav button { background: #444; color: #fff; border: none; padding: 10px 20px; margin-right: 10px; cursor: pointer; font-family: 'Jost', sans-serif; text-transform: uppercase; }
-.demo-nav button.active { background: #8B7F57; }
+        startX = window.innerWidth * (startPercentX / 100);
+        startY = window.innerHeight * (startPercentY / 100);
+    } while (isRestricted(startX, startY));
 
-.view-screen { aspect-ratio: 16 / 9; padding: 20px; display: none; background: #111; position: relative; overflow: hidden; }
-.view-screen.active { display: block; }
+    // 1. 초기 상태 설정: 왼쪽(-50px)에서 투명하게 대기
+    rpgGunnerBox.style.transition = 'none'; 
+    rpgGunnerBox.className = 'rpg-gunner-box fade-left'; 
+    
+    rpgGunnerBox.style.display = 'block';
+    rpgGunnerBox.style.width = gunnerSize + '%';
+    rpgGunnerBox.style.height = 'auto';
+    rpgGunnerBox.style.left = startX + 'px';
+    rpgGunnerBox.style.top = startY + 'px';
+    rpgGunnerLabel.innerText = 'ID: RPG GUNNER (HOSTILE)';
 
-/* =========================================
-   카메라 화면 배경 및 필터 분리 설정
-   ========================================= */
-#camera-view {
-    position: relative;
-    cursor: pointer; 
-}
+    // 브라우저 렌더링 동기화
+    void rpgGunnerBox.offsetWidth;
 
-/* 배경 이미지를 가상 요소(::before)로 생성하여 별도 레이어화 */
-#camera-view::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-image: url('unnamed.jpg');
-    background-size: cover;
-    background-position: center;
-    z-index: 1; /* 가장 아래에 배치 */
-}
+    // 2. 화면에 등장: 제자리(0px)로 오면서 선명하게 페이드 인
+    rpgGunnerBox.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+    rpgGunnerBox.classList.remove('fade-left');
+    rpgGunnerBox.classList.add('fade-center');
 
-/* IR 모드일 때 배경 이미지(가상 요소)에만 필터 적용 */
-#camera-view.ir-mode::before {
-    filter: invert(100%) grayscale(100%) contrast(150%);
-}
+    setTimeout(() => {
+        let timeTick = 0;
 
-/* =========================================
-   OPTICAL 모드 (기본 상태)
-   ========================================= */
-/* 1. 기존 글자들은 모두 초록색 */
-.hud-overlay { 
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-    pointer-events: none; padding: 20px; box-sizing: border-box; 
-    z-index: 10; /* 배경보다 위에 배치 */
-    color: #0f0; 
-}
-.hud-mode, .hud-status, .hud-time { text-shadow: 1px 1px 2px #000; }
-.hud-mode { position: absolute; top: 15px; left: 15px; font-size: 1.2rem; font-weight: bold; }
-.hud-top-center { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); text-align: center; display: flex; flex-direction: column; gap: 5px; }
-.hud-status { font-size: 1rem; font-weight: bold; }
-.hud-time { font-size: 1.2rem; font-weight: bold; }
-.hud-azimuth { position: absolute; bottom: 15px; right: 15px; text-align: center; }
-.azimuth-indicator { width: 90px; height: 90px; border: 2px solid #0f0; border-radius: 50%; position: relative; margin-bottom: 5px; background: rgba(0, 20, 0, 0.5); }
-.hull-icon { width: 24px; height: 45px; border: 1.5px solid #0f0; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-.turret-bar { width: 3px; height: 45px; background: #0f0; position: absolute; top: 50%; left: 50%; transform-origin: bottom center; transform: translate(-50%, -100%) rotate(0deg); transition: transform 0.3s ease-out; }
-.azimuth-text { font-size: 1.2rem; font-weight: bold; }
+        rpgProjectileBox.style.left = startX + 'px';
+        rpgProjectileBox.style.top = startY + 'px';
+        rpgProjectileBox.style.width = gunnerSize + '%';
+        rpgProjectileBox.style.display = 'block';
 
-/* 2. target-box is red color */
-.target-box { 
-    position: absolute; 
-    border: 2px solid red; 
-    z-index: 5;
-    /* transition 속성 제거됨 (JS와 충돌 방지) */
-    display: none; /* 처음에는 JS가 제어하도록 숨김 */
-}
+        // 3. 발사 후 퇴장: 오른쪽(50px)으로 밀려나며 투명하게 페이드 아웃
+        setTimeout(() => {
+            rpgGunnerBox.classList.remove('fade-center');
+            rpgGunnerBox.classList.add('fade-right');
+            
+            // 애니메이션 종료 시간(0.5초)에 맞춰 화면에서 완전히 숨김
+            setTimeout(() => {
+                rpgGunnerBox.style.display = 'none';
+            }, 500); 
+        }, 2000);
 
-/* 3. the text-background is Black */
-.target-label {
-    color: red;
-    background: rgba(0,0,0,0.8);
-    font-size: 0.8rem;
-    position: absolute;
-    top: -20px;
-    left: 0;
-    white-space: nowrap;
-    padding: 2px 4px;
-    border-radius: 2px;
-}
+        let interval = setInterval(() => {
+            timeTick += 0.035; 
+            if (timeTick > 1) timeTick = 1;
 
-/* =========================================
-   IR 모드 (필터가 배경에만 적용되므로 직관적인 색상 사용)
-   ========================================= */
-/* 1. 기존 글자들은 하얀색 및 블러(text-shadow) 제거 */
-#camera-view.ir-mode .hud-overlay { color: #fff; }
-#camera-view.ir-mode .hud-status,
-#camera-view.ir-mode .hud-time { text-shadow: none; }
+            let projSize = gunnerSize + (MAX_SIZE - gunnerSize) * Math.pow(timeTick, 1.5);
 
-/* [수정] IR 모드일 때 MODE 텍스트는 검은색으로 변경 및 그림자 제거 */
-#camera-view.ir-mode .hud-mode {
-    color: #000;
-    text-shadow: none;
-}
+            let currentX = startX + (targetPixelX - startX) * timeTick;
+            let currentY = startY + (targetPixelY - startY) * timeTick;
 
-/* 2. target-box is black color */
-#camera-view.ir-mode .target-box,
-#camera-view.ir-mode .rpg-gunner-box,
-#camera-view.ir-mode .rpg-projectile-box {
-    border-color: #000;
-}
+            rpgProjectileBox.style.width = projSize + '%';
+            rpgProjectileBox.style.height = 'auto';
+            rpgProjectileBox.style.left = currentX + 'px';
+            rpgProjectileBox.style.top = currentY + 'px';
 
-/* 3. text-background is white, text is black */
-#camera-view.ir-mode .target-label {
-    color: #000;
-    background: #fff;
-}
+            let distance = Math.sqrt(Math.pow(targetPixelX - currentX, 2) + Math.pow(targetPixelY - currentY, 2));
 
-/* 로그 화면 */
-#log-view { overflow-y: scroll; color: #0f0; }
-.log-entry { margin-bottom: 8px; border-bottom: 1px dashed #333; padding-bottom: 4px; }
-.log-time { color: #888; margin-right: 10px; }
-.log-alert { color: red; }
-.log-success { color: #0f0; }
-
-/* 새로운 위협 객체 전용 스타일 */
-.rpg-gunner-box, .rpg-projectile-box {
-    position: absolute;
-    border: 2px solid red;
-    z-index: 5;
-    /* transition 속성 제거됨 (JS와 충돌 방지) */
-    display: none; /* 처음에는 숨김 */
-}
-
-/* 병사 및 탄두 박스는 JS에서 동적으로 크기와 위치를 할당하므로 고정 CSS 제거됨 */
-
-/* RPG 이미지 스프라이트 */
-.rpg-sprite, .rpg-projectile-sprite, .uav-sprite {
-    width: 100%; height: 100%;
-    object-fit: contain; /* 이미지 비율 유지 */
+            if (distance <= 10 || timeTick === 1) {
+                clearInterval(interval);
+                rpgProjectileBox.style.display = 'none';
+                setTimeout(spawnRandomThreat, 1500);
+            }
+        }, 30);
+    }, 500); 
 }
