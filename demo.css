@@ -107,3 +107,31 @@ body { background-color: #000; color: #0f0; font-family: monospace; }
 .log-time { color: #888; margin-right: 10px; }
 .log-alert { color: red; }
 .log-success { color: #0f0; }
+
+/* 새로운 위협 객체 전용 스타일 */
+.rpg-gunner-box, .rpg-projectile-box {
+    position: absolute;
+    border: 2px solid red;
+    z-index: 5;
+    transition: width 0.2s ease, height 0.2s ease, transform 0.1s ease;
+    display: none; /* 처음에는 숨김 */
+}
+
+/* 병사 박스 (더 크고 좁게) */
+.rpg-gunner-box {
+    width: 60px; height: 120px;
+    top: auto; bottom: 10%; /* 병사는 주로 지면에 스폰 */
+}
+
+/* 탄두 박스 (더 작고 빠름) */
+.rpg-projectile-box {
+    width: 30px; height: 30px;
+}
+
+/* RPG 이미지 스프라이트 */
+.rpg-sprite, .rpg-projectile-sprite {
+    width: 100%; height: 100%;
+    object-fit: contain; /* 이미지 비율 유지 */
+}
+
+/* UAV 박스 (기존 로직 사용 가능) */
