@@ -159,6 +159,7 @@ function spawnTerroristAndRPG() {
     let gunnerSize = 5; 
     let startX, startY;
     
+    // 금지 구역 판별 로직
     do {
         let isLeft = Math.random() > 0.5;
         let startPercentX = isLeft ? 5 + Math.random() * 15 : 80 + Math.random() * 15;
@@ -168,12 +169,24 @@ function spawnTerroristAndRPG() {
         startY = window.innerHeight * (startPercentY / 100);
     } while (isRestricted(startX, startY));
 
+    // 1. 초기 상태 설정: 왼쪽(-50px)에서 투명하게 대기
+    rpgGunnerBox.style.transition = 'none'; 
+    rpgGunnerBox.className = 'rpg-gunner-box fade-left'; 
+    
     rpgGunnerBox.style.display = 'block';
     rpgGunnerBox.style.width = gunnerSize + '%';
     rpgGunnerBox.style.height = 'auto';
     rpgGunnerBox.style.left = startX + 'px';
     rpgGunnerBox.style.top = startY + 'px';
     rpgGunnerLabel.innerText = 'ID: RPG GUNNER (HOSTILE)';
+
+    // 브라우저 렌더링 동기화
+    void rpgGunnerBox.offsetWidth;
+
+    // 2. 화면에 등장: 제자리(0px)로 오면서 선명하게 페이드 인
+    rpgGunnerBox.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+    rpgGunnerBox.classList.remove('fade-left');
+    rpgGunnerBox.classList.add('fade-center');
 
     setTimeout(() => {
         let timeTick = 0;
@@ -183,8 +196,15 @@ function spawnTerroristAndRPG() {
         rpgProjectileBox.style.width = gunnerSize + '%';
         rpgProjectileBox.style.display = 'block';
 
+        // 3. 발사 후 퇴장: 오른쪽(50px)으로 밀려나며 투명하게 페이드 아웃
         setTimeout(() => {
-            rpgGunnerBox.style.display = 'none';
+            rpgGunnerBox.classList.remove('fade-center');
+            rpgGunnerBox.classList.add('fade-right');
+            
+            // 애니메이션 종료 시간(0.5초)에 맞춰 화면에서 완전히 숨김
+            setTimeout(() => {
+                rpgGunnerBox.style.display = 'none';
+            }, 500); 
         }, 2000);
 
         let interval = setInterval(() => {
@@ -193,7 +213,6 @@ function spawnTerroristAndRPG() {
 
             let projSize = gunnerSize + (MAX_SIZE - gunnerSize) * Math.pow(timeTick, 1.5);
 
-            // 현재 targetPixelX, targetPixelY 값을 기준으로 이동
             let currentX = startX + (targetPixelX - startX) * timeTick;
             let currentY = startY + (targetPixelY - startY) * timeTick;
 
@@ -211,14 +230,6 @@ function spawnTerroristAndRPG() {
             }
         }, 30);
     }, 500); 
-}
-
-function spawnRandomThreat() {
-    if (Math.random() > 0.5) {
-        spawnFPV();
-    } else {
-        spawnTerroristAndRPG();
-    }
 }
 
 setTimeout(spawnRandomThreat, 1000);
