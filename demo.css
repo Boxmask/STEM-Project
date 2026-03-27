@@ -9,11 +9,28 @@ body { background-color: #000; color: #0f0; font-family: monospace; }
 .view-screen { aspect-ratio: 16 / 9; padding: 20px; display: none; background: #111; position: relative; overflow: hidden; }
 .view-screen.active { display: block; }
 
+/* =========================================
+   카메라 화면 배경 및 필터 분리 설정
+   ========================================= */
 #camera-view {
+    position: relative;
+    cursor: pointer; 
+}
+
+/* 배경 이미지를 가상 요소(::before)로 생성하여 별도 레이어화 */
+#camera-view::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
     background-image: url('unnamed.jpg');
     background-size: cover;
     background-position: center;
-    cursor: pointer; 
+    z-index: 1; /* 가장 아래에 배치 */
+}
+
+/* IR 모드일 때 배경 이미지(가상 요소)에만 필터 적용 */
+#camera-view.ir-mode::before {
+    filter: invert(100%) grayscale(100%) contrast(150%);
 }
 
 /* =========================================
@@ -22,7 +39,8 @@ body { background-color: #000; color: #0f0; font-family: monospace; }
 /* 1. 기존 글자들은 모두 초록색 */
 .hud-overlay { 
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-    pointer-events: none; padding: 20px; box-sizing: border-box; z-index: 10; 
+    pointer-events: none; padding: 20px; box-sizing: border-box; 
+    z-index: 10; /* 배경보다 위에 배치 */
     color: #0f0; 
 }
 .hud-mode, .hud-status, .hud-time { text-shadow: 1px 1px 2px #000; }
@@ -53,30 +71,26 @@ body { background-color: #000; color: #0f0; font-family: monospace; }
 }
 
 /* =========================================
-   IR 모드 (색상 반전 고려)
+   IR 모드 (필터가 배경에만 적용되므로 직관적인 색상 사용)
    ========================================= */
-#camera-view.ir-mode {
-    filter: invert(100%) grayscale(100%) contrast(150%);
-}
-
-/* 1. 기존 글자들은 하얀색(반전 전 검은색 지정) 및 블러 제거 */
-#camera-view.ir-mode .hud-overlay { color: #000; }
+/* 1. 기존 글자들은 하얀색 및 블러(text-shadow) 제거 */
+#camera-view.ir-mode .hud-overlay { color: #fff; }
 #camera-view.ir-mode .hud-mode,
 #camera-view.ir-mode .hud-status,
 #camera-view.ir-mode .hud-time { text-shadow: none; }
-#camera-view.ir-mode .azimuth-indicator { border-color: #000; }
-#camera-view.ir-mode .hull-icon { border-color: #000; }
-#camera-view.ir-mode .turret-bar { background: #000; }
+#camera-view.ir-mode .azimuth-indicator { border-color: #fff; }
+#camera-view.ir-mode .hull-icon { border-color: #fff; }
+#camera-view.ir-mode .turret-bar { background: #fff; }
 
-/* 2. target-box is black color (반전 전 하얀색 지정) */
+/* 2. target-box is black color */
 #camera-view.ir-mode .target-box {
-    border-color: #fff;
+    border-color: #000;
 }
 
-/* 3. text-background is white (반전 전 검은색 지정), 텍스트는 검은색이 보이도록 (반전 전 흰색 지정) */
+/* 3. text-background is white, text is black */
 #camera-view.ir-mode .target-label {
-    color: #fff;
-    background: rgba(0, 0, 0, 1);
+    color: #000;
+    background: #fff;
 }
 
 /* 로그 화면 */
