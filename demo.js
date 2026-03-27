@@ -99,7 +99,8 @@ function spawnFPV() {
     targetLabel.innerText = 'ID: FPV (HOSTILE)';
 
     let interval = setInterval(() => {
-        timeTick += 0.015; // 속도를 크게 줄임 (약 2초 체공)
+        // 수정됨: 드론이 날아오는 속도 감소 (기존 0.015 -> 0.008)
+        timeTick += 0.008; 
         
         if (timeTick > 1) timeTick = 1;
 
@@ -148,7 +149,8 @@ function spawnTerroristAndRPG() {
         rpgProjectileBox.style.display = 'block';
 
         let interval = setInterval(() => {
-            timeTick += 0.02; // 탄두 속도 감소
+            // 수정됨: RPG 탄두가 날아오는 속도 증가 (기존 0.02 -> 0.035)
+            timeTick += 0.035; 
 
             if (timeTick > 1) timeTick = 1;
 
@@ -185,3 +187,45 @@ function spawnRandomThreat() {
 
 // 최초 스폰 시작
 setTimeout(spawnRandomThreat, 1000);
+
+
+// =========================================================================
+// [디버그 모드 시작] - 나중에 배포 시 아래 블록만 전체 삭제 또는 주석 처리하면 됩니다.
+// =========================================================================
+const debugUI = document.createElement('div');
+debugUI.style.cssText = 'position:fixed; top:10px; right:10px; background:rgba(0,0,0,0.8); color:lime; padding:10px; font-family:monospace; font-size:12px; z-index:9999; pointer-events:none; border:1px solid lime;';
+document.body.appendChild(debugUI);
+
+let currentMouseX = 0;
+let currentMouseY = 0;
+
+document.addEventListener('mousemove', (e) => {
+    currentMouseX = e.clientX;
+    currentMouseY = e.clientY;
+});
+
+setInterval(() => {
+    let htmlStr = `<strong>[SYSTEM DEBUG INFO]</strong><br><br>`;
+    htmlStr += `Cursor Pos (px): X: ${currentMouseX}, Y: ${currentMouseY}<br><br>`;
+
+    if (targetBox.style.display === 'block') {
+        htmlStr += `[FPV DRONE]<br>`;
+        htmlStr += `Width: ${targetBox.style.width}<br>`;
+        htmlStr += `Pos: X: ${targetBox.style.left}, Y: ${targetBox.style.top}<br><br>`;
+    }
+
+    if (rpgProjectileBox.style.display === 'block') {
+        htmlStr += `[RPG PROJECTILE]<br>`;
+        htmlStr += `Width: ${rpgProjectileBox.style.width}<br>`;
+        htmlStr += `Pos: X: ${rpgProjectileBox.style.left}, Y: ${rpgProjectileBox.style.top}<br>`;
+    }
+
+    if (targetBox.style.display !== 'block' && rpgProjectileBox.style.display !== 'block') {
+        htmlStr += `Active Projectiles: None`;
+    }
+
+    debugUI.innerHTML = htmlStr;
+}, 50);
+// =========================================================================
+// [디버그 모드 종료]
+// =========================================================================
