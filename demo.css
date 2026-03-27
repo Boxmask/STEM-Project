@@ -55,7 +55,13 @@ body { background-color: #000; color: #0f0; font-family: monospace; }
 .azimuth-text { font-size: 1.2rem; font-weight: bold; }
 
 /* 2. target-box is red color */
-.target-box { position: absolute; border: 2px solid red; width: 50px; height: 50px; top: 40%; left: 30%; z-index: 5;}
+.target-box { 
+    position: absolute; 
+    border: 2px solid red; 
+    z-index: 5;
+    transition: width 0.2s ease, height 0.2s ease; /* 크기 변경 애니메이션 */
+    display: none; /* 처음에는 JS가 제어하도록 숨김 */
+}
 
 /* 3. the text-background is Black */
 .target-label {
