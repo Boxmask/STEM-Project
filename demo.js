@@ -75,60 +75,28 @@ setInterval(() => {
 }, 3500);
 
 // =========================================
-// 동적 시뮬레이션 및 스폰 포인트 로직
+// 5. 동적 시뮬레이션 및 스폰 포인트 로직
 // =========================================
-
-// 추출한 목표 좌표 및 스폰 포인트 데이터 (초기값)
-let targetPixelX = 1009;
-let targetPixelY = 761;
-
-const SPAWN_POINTS_FPV = [
-    { id: 'F3', x: 798, y: 219 },
-    { id: 'F4', x: 1178, y: 223 },
-    { id: 'F5', x: 804, y: 322 },
-    { id: 'F6', x: 995, y: 310 },
-    { id: 'F7', x: 1167, y: 347 },
-    { id: 'F8', x: 889, y: 319 },
-    { id: 'F9', x: 695, y: 258 },
-    { id: 'F10', x: 1087, y: 413 },
-    { id: 'F11', x: 956, y: 392 },
-    { id: 'F12', x: 1091, y: 301 },
-];
-
-const SPAWN_POINTS_RPG = [
-    { id: 'R3', x: 904, y: 554 },
-    { id: 'R4', x: 1047, y: 559 },
-    { id: 'R5', x: 617, y: 596 },
-    { id: 'R6', x: 505, y: 684 },
-    { id: 'R7', x: 1237, y: 606 },
-    { id: 'R8', x: 796, y: 563 },
-    { id: 'R9', x: 1147, y: 551 },
-    { id: 'R10', x: 981, y: 542 },
-    { id: 'R11', x: 898, y: 526 },
-];
-
-const targetBox = document.getElementById('target-box'); 
-const targetLabel = document.getElementById('target-label');
-const rpgGunnerBox = document.getElementById('rpg-gunner-box');
-const rpgGunnerLabel = document.getElementById('rpg-gunner-label');
-const rpgProjectileBox = document.getElementById('rpg-projectile-box');
-
-const MAX_SIZE = 20; 
 
 function spawnFPV() {
     if (SPAWN_POINTS_FPV.length === 0) return;
 
-    // 등록된 FPV 스폰 포인트 중 무작위 하나 선택
     let spawnNode = SPAWN_POINTS_FPV[Math.floor(Math.random() * SPAWN_POINTS_FPV.length)];
     let startX = spawnNode.x;
     let startY = spawnNode.y;
     
     let timeTick = 0; 
+    let isIntercepted = Math.random() <= 0.82; 
+    
+    // [수정됨] 0.5 기본값에 0~0.1 사이의 난수를 더해 50~60% 진행 구간 설정
+    let interceptPoint = 0.5 + (Math.random() * 0.1); 
+
+    let logResultElement = updateSystemLog('FPV LOITERING MUNITION', startX, startY);
 
     targetBox.style.left = startX + 'px';
     targetBox.style.top = startY + 'px';
     targetBox.style.width = '0%'; 
-    targetBox.style.transform = 'translate(-50%, -50%)'; // 중심점 정렬 보정
+    targetBox.style.transform = 'translate(-50%, -50%)'; 
     targetBox.style.display = 'block';
     targetLabel.innerText = 'ID: FPV (HOSTILE)';
 
@@ -137,7 +105,6 @@ function spawnFPV() {
         if (timeTick > 1) timeTick = 1;
 
         let size = MAX_SIZE * Math.pow(timeTick, 1.5); 
-
         let currentX = startX + (targetPixelX - startX) * timeTick;
         let currentY = startY + (targetPixelY - startY) * timeTick;
 
@@ -146,11 +113,22 @@ function spawnFPV() {
         targetBox.style.left = currentX + 'px';
         targetBox.style.top = currentY + 'px';
 
+        // 82% 확률에 당첨되었고, 설정된 요격 지점(50~60%)에 도달했을 때
+        if (isIntercepted && timeTick >= interceptPoint) {
+            clearInterval(interval);
+            targetBox.style.display = 'none';
+            createExplosion(currentX, currentY); 
+            logResultElement.innerHTML = `<span class="log-success">THREAT NEUTRALIZED.</span>`;
+            setTimeout(spawnRandomThreat, 1500);
+            return;
+        }
+
         let distance = Math.sqrt(Math.pow(targetPixelX - currentX, 2) + Math.pow(targetPixelY - currentY, 2));
 
         if (distance <= 10 || timeTick === 1) {
             clearInterval(interval);
             targetBox.style.display = 'none';
+            logResultElement.innerHTML = `<span class="log-alert">INTERCEPT FAILED. BRACE.</span>`;
             setTimeout(spawnRandomThreat, 1500); 
         }
     }, 30);
@@ -159,10 +137,16 @@ function spawnFPV() {
 function spawnTerroristAndRPG() {
     if (SPAWN_POINTS_RPG.length === 0) return;
 
-    // 등록된 RPG 사수 스폰 포인트 중 무작위 하나 선택
     let spawnNode = SPAWN_POINTS_RPG[Math.floor(Math.random() * SPAWN_POINTS_RPG.length)];
     let startX = spawnNode.x;
     let startY = spawnNode.y;
+
+    let isIntercepted = Math.random() <= 0.82; 
+    
+    // [수정됨] 0.5 기본값에 0~0.1 사이의 난수를 더해 50~60% 진행 구간 설정
+    let interceptPoint = 0.5 + (Math.random() * 0.1); 
+    
+    let logResultElement = null; 
 
     rpgGunnerBox.style.transition = 'none'; 
     rpgGunnerBox.className = 'rpg-gunner-box fade-left'; 
@@ -183,10 +167,12 @@ function spawnTerroristAndRPG() {
     setTimeout(() => {
         let timeTick = 0;
 
+        logResultElement = updateSystemLog('RPG-7 WARHEAD', startX, startY);
+
         rpgProjectileBox.style.left = startX + 'px';
         rpgProjectileBox.style.top = startY + 'px';
         rpgProjectileBox.style.width = '5%';
-        rpgProjectileBox.style.transform = 'translate(-50%, -50%)'; // 중심점 정렬 보정
+        rpgProjectileBox.style.transform = 'translate(-50%, -50%)'; 
         rpgProjectileBox.style.display = 'block';
 
         setTimeout(() => {
@@ -203,7 +189,6 @@ function spawnTerroristAndRPG() {
             if (timeTick > 1) timeTick = 1;
 
             let projSize = 5 + (MAX_SIZE - 5) * Math.pow(timeTick, 1.5);
-
             let currentX = startX + (targetPixelX - startX) * timeTick;
             let currentY = startY + (targetPixelY - startY) * timeTick;
 
@@ -212,11 +197,22 @@ function spawnTerroristAndRPG() {
             rpgProjectileBox.style.left = currentX + 'px';
             rpgProjectileBox.style.top = currentY + 'px';
 
+            // 요격 성공 시 (50~60% 지점)
+            if (isIntercepted && timeTick >= interceptPoint) {
+                clearInterval(interval);
+                rpgProjectileBox.style.display = 'none';
+                createExplosion(currentX, currentY);
+                if(logResultElement) logResultElement.innerHTML = `<span class="log-success">THREAT NEUTRALIZED.</span>`;
+                setTimeout(spawnRandomThreat, 1500);
+                return;
+            }
+
             let distance = Math.sqrt(Math.pow(targetPixelX - currentX, 2) + Math.pow(targetPixelY - currentY, 2));
 
             if (distance <= 10 || timeTick === 1) {
                 clearInterval(interval);
                 rpgProjectileBox.style.display = 'none';
+                if(logResultElement) logResultElement.innerHTML = `<span class="log-alert">INTERCEPT FAILED. BRACE.</span>`;
                 setTimeout(spawnRandomThreat, 1500);
             }
         }, 30);
