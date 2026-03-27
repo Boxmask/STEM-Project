@@ -78,7 +78,7 @@ setInterval(() => {
 // 비선형 크기 증가(커브) 동적 시뮬레이션 로직
 // =========================================
 
-// (여기에 추출한 코드를 붙여넣습니다)
+// 추출한 좌표와 다각형 데이터
 let targetPixelX = 1009;
 let targetPixelY = 761;
 
@@ -109,9 +109,6 @@ const rpgGunnerBox = document.getElementById('rpg-gunner-box');
 const rpgGunnerLabel = document.getElementById('rpg-gunner-label');
 const rpgProjectileBox = document.getElementById('rpg-projectile-box');
 
-// [수정됨] 실시간 목표 변경을 위해 const에서 let으로 변경
-let targetPixelX = 1009; 
-let targetPixelY = 741;
 const MAX_SIZE = 20; 
 
 function spawnFPV() {
@@ -136,7 +133,6 @@ function spawnFPV() {
 
         let size = MAX_SIZE * Math.pow(timeTick, 1.5); 
 
-        // 현재 targetPixelX, targetPixelY 값을 기준으로 이동
         let currentX = startX + (targetPixelX - startX) * timeTick;
         let currentY = startY + (targetPixelY - startY) * timeTick;
 
@@ -159,7 +155,6 @@ function spawnTerroristAndRPG() {
     let gunnerSize = 5; 
     let startX, startY;
     
-    // 금지 구역 판별 로직
     do {
         let isLeft = Math.random() > 0.5;
         let startPercentX = isLeft ? 5 + Math.random() * 15 : 80 + Math.random() * 15;
@@ -232,8 +227,16 @@ function spawnTerroristAndRPG() {
     }, 500); 
 }
 
-setTimeout(spawnRandomThreat, 1000);
+// [복구됨] 랜덤 스폰 함수
+function spawnRandomThreat() {
+    if (Math.random() > 0.5) {
+        spawnFPV();
+    } else {
+        spawnTerroristAndRPG();
+    }
+}
 
+setTimeout(spawnRandomThreat, 1000);
 
 // =========================================================================
 // [디버그 모드 시작] - 다각형 에디터 및 목표 설정 툴 포함
@@ -260,7 +263,6 @@ let dragIndex = -1;
 let isDraggingTarget = false;
 let nextPointChar = 69; // 'E'의 아스키 코드 시작점
 
-// [추가됨] 목표 지점(Target) 파란색 핸들 생성
 let targetHandle = document.createElement('div');
 targetHandle.style.cssText = `position:fixed; width:20px; height:20px; background:blue; border-radius:50%; border:2px solid white; cursor:move; z-index:9999; transform:translate(-50%, -50%);`;
 targetHandle.style.left = targetPixelX + 'px';
@@ -272,7 +274,6 @@ targetHandle.addEventListener('mousedown', () => {
 });
 document.body.appendChild(targetHandle);
 
-// 개별 점 핸들(빨간색) 생성 함수
 function createHandle(corner, index) {
     let handle = document.createElement('div');
     handle.style.cssText = `position:fixed; width:16px; height:16px; background:red; border:2px solid white; cursor:move; z-index:9999; transform:translate(-50%, -50%);`;
@@ -281,7 +282,6 @@ function createHandle(corner, index) {
     handle.title = corner.id;
     
     handle.addEventListener('mousedown', (e) => {
-        // 현재 클릭한 점이 corners 배열에서 몇 번째인지 인덱스를 찾음
         dragIndex = corners.indexOf(corner); 
     });
     
@@ -289,25 +289,22 @@ function createHandle(corner, index) {
     handles.push(handle);
 }
 
-// 초기 점 4개 핸들 생성
 corners.forEach((corner, index) => {
     createHandle(corner, index);
 });
 
-// [추가됨] 점 추가 버튼 클릭 이벤트
 document.getElementById('btn-add-point').addEventListener('click', () => {
-    let newId = String.fromCharCode(nextPointChar++); // E, F, G 순으로 ID 부여
-    let newX = window.innerWidth / 2; // 화면 중앙에 생성
+    let newId = String.fromCharCode(nextPointChar++); 
+    let newX = window.innerWidth / 2; 
     let newY = window.innerHeight / 2;
     
     let newCorner = { id: newId, x: newX, y: newY };
-    corners.push(newCorner); // 배열에 점 추가
-    createHandle(newCorner, corners.length - 1); // 핸들 DOM 생성
-    drawPolygon(); // SVG 화면 갱신
+    corners.push(newCorner); 
+    createHandle(newCorner, corners.length - 1); 
+    drawPolygon(); 
 });
 
 document.addEventListener('mousemove', (e) => {
-    // 다각형 점 드래그
     if (dragIndex !== -1) {
         corners[dragIndex].x = e.pageX;
         corners[dragIndex].y = e.pageY;
@@ -315,7 +312,6 @@ document.addEventListener('mousemove', (e) => {
         handles[dragIndex].style.top = e.pageY + 'px';
         drawPolygon();
     } 
-    // 목표 지점 드래그
     else if (isDraggingTarget) {
         targetPixelX = e.pageX;
         targetPixelY = e.pageY;
@@ -340,8 +336,7 @@ drawPolygon();
 document.getElementById('btn-solve').addEventListener('click', () => {
     const output = document.getElementById('output-code');
     
-    let code = `// 1. 아래 코드를 복사하여 기존 변수 선언 영역을 대체하세요.\n`;
-    code += `let targetPixelX = ${targetPixelX};\n`;
+    let code = `let targetPixelX = ${targetPixelX};\n`;
     code += `let targetPixelY = ${targetPixelY};\n\n`;
     
     code += `const RESTRICTED_POLY = [\n`;
