@@ -136,3 +136,22 @@ body { background-color: #000; color: #0f0; font-family: monospace; }
     width: 100%; height: 100%;
     object-fit: contain; 
 }
+
+/* 폭발 이펙트 스타일 */
+.explosion-effect {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle, rgba(255,200,0,1) 0%, rgba(255,50,0,0.8) 50%, rgba(0,0,0,0) 100%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 1;
+    z-index: 20;
+    pointer-events: none;
+    transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+}
+
+.explosion-effect.fade {
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 0;
+}
