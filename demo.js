@@ -196,41 +196,6 @@ setTimeout(spawnRandomThreat, 1000);
 // =========================================================================
 // [디버그 모드 시작] 
 // =========================================================================
-const debugUI = document.createElement('div');
-debugUI.style.cssText = 'position:fixed; top:10px; right:10px; background:rgba(0,0,0,0.8); color:lime; padding:10px; font-family:monospace; font-size:12px; z-index:9999; pointer-events:none; border:1px solid lime;';
-document.body.appendChild(debugUI);
-
-let currentMouseX = 0;
-let currentMouseY = 0;
-
-document.addEventListener('mousemove', (e) => {
-    // 뷰포트(브라우저 창) 기준이 아닌 전체 문서(Document) 기준 좌표로 수정
-    currentMouseX = e.pageX;
-    currentMouseY = e.pageY;
-});
-
-setInterval(() => {
-    let htmlStr = `<strong>[SYSTEM DEBUG INFO]</strong><br><br>`;
-    htmlStr += `Screen Pos (px): X: ${currentMouseX}, Y: ${currentMouseY}<br><br>`; // 텍스트 수정
-
-    if (targetBox.style.display === 'block') {
-        htmlStr += `[FPV DRONE]<br>`;
-        htmlStr += `Width: ${targetBox.style.width}<br>`;
-        htmlStr += `Pos: X: ${targetBox.style.left}, Y: ${targetBox.style.top}<br><br>`;
-    }
-
-    if (rpgProjectileBox.style.display === 'block') {
-        htmlStr += `[RPG PROJECTILE]<br>`;
-        htmlStr += `Width: ${rpgProjectileBox.style.width}<br>`;
-        htmlStr += `Pos: X: ${rpgProjectileBox.style.left}, Y: ${rpgProjectileBox.style.top}<br>`;
-    }
-
-    if (targetBox.style.display !== 'block' && rpgProjectileBox.style.display !== 'block') {
-        htmlStr += `Active Projectiles: None`;
-    }
-
-    debugUI.innerHTML = htmlStr;
-}, 50);
 
 // [디버그 모드에 추가] 스폰 금지 구역을 화면에 반투명 붉은색 박스로 표시
 const debugRestrictedZone = document.createElement('div');
