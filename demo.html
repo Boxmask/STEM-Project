@@ -9,29 +9,102 @@
     <style>
         /* 데모 전용 CSS */
         body { background-color: #000; color: #0f0; font-family: monospace; }
-        #demo-container { margin: 8rem auto 2rem; width: 90%; max-width: 1000px; border: 2px solid #333; }
-        
+
+        /* 요청 2: 비율 유지하며 크기만 더 크게 조정 */
+        #demo-container {
+            margin: 8rem auto 2rem;
+            width: 90%;
+            max-width: 1200px; /* 기존 1000px에서 1200px로 증가 */
+            border: 2px solid #333;
+        }
+
         .demo-nav { display: flex; background: #222; padding: 10px; }
-        .demo-nav button { background: #444; color: #fff; border: none; padding: 10px 20px; margin-right: 10px; cursor: pointer; font-family: 'Jost', sans-serif; text-transform: uppercase; }
+        .demo-nav button {
+            background: #444; color: #fff; border: none;
+            padding: 10px 20px; margin-right: 10px; cursor: pointer;
+            font-family: 'Jost', sans-serif; text-transform: uppercase;
+        }
         .demo-nav button.active { background: #8B7F57; }
-        
-        .view-screen { height: 500px; padding: 20px; display: none; background: #111; position: relative; overflow: hidden; }
+
+        /* 요청 2: 비율 유지 (aspect-ratio 사용) 및 고정 높이 제거 */
+        .view-screen {
+            aspect-ratio: 16 / 9; /* 군용 HUD 비율로 고정 */
+            padding: 20px;
+            display: none;
+            background: #111;
+            position: relative;
+            overflow: hidden;
+        }
         .view-screen.active { display: block; }
-        
-        /* 카메라 화면 (배경 및 타겟 박스) */
-        #camera-view { background: url('APS.webp') center/cover; }
-        .target-box { position: absolute; border: 2px solid red; width: 50px; height: 50px; top: 40%; left: 30%; z-index: 5;}
+
+        /* 카메라 화면 (가상의 타겟 박스 및 요청 1 이미지 교체) */
+        #camera-view {
+            background-image: url('image_8.png'); /* 첨부사진으로 교체 */
+            background-size: cover;
+            background-position: center;
+            cursor: pointer; /* 클릭하여 모드 전환 */
+        }
+
+        /* 요청 3: 코드만으로 적외선카메라 효과 구현 (CSS 필터 사용) */
+        #camera-view.ir-mode {
+            filter: invert(100%) grayscale(100%) contrast(150%);
+        }
+
+        .target-box { position: absolute; border: 2px solid red; width: 50px; height: 50px; top: 40%; left: 30%; }
         .target-label { color: red; background: rgba(0,0,0,0.7); font-size: 0.8rem; position: absolute; top: -20px; left: 0; white-space: nowrap; }
-        
-        /* HUD 오버레이 전용 CSS */
-        .hud-mode { position: absolute; top: 15px; left: 15px; font-size: 1.2rem; font-weight: bold; z-index: 10; text-shadow: 1px 1px 2px #000; }
-        .hud-time { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); font-size: 1.2rem; font-weight: bold; z-index: 10; text-shadow: 1px 1px 2px #000; }
-        .hud-azimuth { position: absolute; bottom: 15px; right: 15px; text-align: center; z-index: 10; }
-        
-        .azimuth-indicator { width: 60px; height: 60px; border: 2px solid #0f0; border-radius: 50%; position: relative; margin-bottom: 5px; background: rgba(0, 20, 0, 0.5); }
-        .hull-icon { width: 16px; height: 30px; border: 1.5px solid #0f0; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        .turret-bar { width: 2px; height: 30px; background: #0f0; position: absolute; top: 50%; left: 50%; transform-origin: bottom center; transform: translate(-50%, -100%) rotate(0deg); transition: transform 0.3s ease-out; }
-        
+
+        /* ZONTIK-1 HUD OVERLAY */
+        .hud-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; /* 클릭 방지 */
+            font-family: monospace;
+            color: #0f0; /* 군사용 monochrome 녹색 */
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 10; /* 타겟 박스 위로 오버레이 */
+        }
+
+        /* 요소별 배치 */
+        .hud-mode { position: absolute; top: 20px; left: 20px; font-size: 1.1rem; }
+        .hud-time { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); font-size: 1.2rem; font-weight: bold; }
+        .hud-azimuth { position: absolute; bottom: 20px; right: 20px; text-align: center; }
+
+        /* 포탑 각도 인디케이터 (Azimuth) 원형틀 */
+        .azimuth-indicator {
+            width: 60px; height: 60px;
+            border: 2px solid #0f0;
+            border-radius: 50%;
+            position: relative;
+            margin-bottom: 5px;
+            background: rgba(0, 20, 0, 0.5); /* 약간의 배경색 */
+        }
+
+        /* 차체 모양 (간단한 직사각형) */
+        .hull-icon {
+            width: 20px; height: 32px;
+            background: #222;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid #555;
+            border-radius: 2px;
+        }
+
+        /* 포탑 막대 (초침처럼 회전) */
+        .turret-bar {
+            width: 2px; height: 30px;
+            background: #0f0;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform-origin: bottom center; /* 아래쪽을 기준으로 회전 */
+            transform: translate(-50%, -100%) rotate(0deg); /* 0도 초기화 */
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
+            transition: transform 0.3s ease-out; /* 부드러운 회전 효과 */
+        }
+        .azimuth-text { font-size: 1rem; }
+
         /* 로그 화면 */
         #log-view { overflow-y: scroll; color: #0f0; }
         .log-entry { margin-bottom: 8px; border-bottom: 1px dashed #333; padding-bottom: 4px; }
@@ -55,18 +128,21 @@
         </div>
 
         <div id="camera-view" class="view-screen active">
-            <div class="hud-mode">SENSOR: <span id="camera-mode-val">OPTICAL</span></div>
-            <div class="hud-time" id="hud-time-display">00:00:00</div>
-            <div class="hud-azimuth">
-                <div class="azimuth-indicator">
-                    <div class="hull-icon"></div>
-                    <div class="turret-bar" id="turret-bar"></div>
+            <div class="hud-overlay">
+                <div class="hud-mode">SENSOR: <span id="camera-mode-val">OPTICAL</span></div>
+
+                <div class="hud-time" id="hud-time-display">00:00:00</div>
+
+                <div class="hud-azimuth">
+                    <div class="azimuth-indicator">
+                        <div class="hull-icon"></div> <div class="turret-bar" id="turret-bar"></div> </div>
+                    <div class="azimuth-text"><span id="azimuth-val">0</span>°</div>
                 </div>
-                <div class="azimuth-text"><span id="azimuth-val">0</span>°</div>
             </div>
 
-            <div class="target-box" id="target-box">
-                <div class="target-label" id="target-label">ID: ATGM (HOSTILE)</div>
+            <div style="color: #fff; background: rgba(0,0,0,0.5); padding: 5px; display: inline-block;">OPTICAL SENSOR: ONLINE</div>
+            <div class="target-box">
+                <div class="target-label">ID: ATGM (HOSTILE)</div>
             </div>
         </div>
 
@@ -93,21 +169,36 @@
             viewLog.classList.add('active'); viewCamera.classList.remove('active');
         });
 
-        // 2. HUD 실시간 시계 기능
-        const timeDisplay = document.getElementById('hud-time-display');
-        setInterval(() => {
-            const now = new Date();
-            // 시, 분, 초를 두 자리 수로 포맷팅
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            timeDisplay.innerText = `${hours}:${minutes}:${seconds}`;
-        }, 1000);
+        // 2. HUD 실시간 시계 업데이트 기능
+        const hudTimeDisplay = document.getElementById('hud-time-display');
 
-        // 3. 가상 로그 생성 및 포탑 각도 연동 기능
+        function updateHudTime() {
+            const now = new Date();
+            const timeStr = String(now.getHours()).padStart(2, '0') + ":" +
+                          String(now.getMinutes()).padStart(2, '0') + ":" +
+                          String(now.getSeconds()).padStart(2, '0');
+            hudTimeDisplay.innerText = timeStr;
+        }
+        updateHudTime(); // 초기 실행
+        setInterval(updateHudTime, 1000); // 1초마다 업데이트
+
+        // 3. 카메라 모드 전환 (OPTICAL <-> IR) 클릭 이벤트
+        const cameraModeVal = document.getElementById('camera-mode-val');
+
+        viewCamera.addEventListener('click', () => {
+            if (cameraModeVal.innerText === 'OPTICAL') {
+                cameraModeVal.innerText = 'IR';
+                viewCamera.classList.add('ir-mode'); // CSS 필터 적용
+            } else {
+                cameraModeVal.innerText = 'OPTICAL';
+                viewCamera.classList.remove('ir-mode'); // CSS 필터 제거
+            }
+        });
+
+        // 4. 가상 로그 생성 및 포탑 각도 인디케이터 연동 기능
         const logContent = document.getElementById('log-content');
         const turretBar = document.getElementById('turret-bar');
-        const azimuthVal = document.getElementById('azimuth-val');
+        const azimuthValText = document.getElementById('azimuth-val');
         const threats = ['ATGM', 'RPG-7', 'Loitering Munition'];
         
         setInterval(() => {
@@ -115,19 +206,17 @@
             const timeStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0') + ":" + String(now.getSeconds()).padStart(2, '0');
             
             const randomThreat = threats[Math.floor(Math.random() * threats.length)];
-            const isSuccess = Math.random() > 0.1; 
-            const randomAzimuth = Math.floor(Math.random() * 360); // 0~359도 무작위 각도 생성
-            const randomDistance = Math.floor(Math.random() * 800) + 100;
+            const isSuccess = Math.random() > 0.1; // 90% 요격 성공 확률
+            const randomAzimuth = Math.floor(Math.random() * 360); // 0~359도 무작위 각도
 
-            // 포탑 각도 인디케이터 시각적 업데이트
+            // 포탑 각도 인디케이터 업데이트 (CSS 회전)
             turretBar.style.transform = `translate(-50%, -100%) rotate(${randomAzimuth}deg)`;
-            azimuthVal.innerText = randomAzimuth;
+            azimuthValText.innerText = randomAzimuth;
 
-            // 로그 출력 처리
             let logHtml = `<div class="log-entry">
                 <span class="log-time">[${timeStr}]</span>
                 <span class="log-alert">WARNING: INCOMING ${randomThreat} DETECTED.</span><br>
-                <span>AZIMUTH: ${randomAzimuth}° | DISTANCE: ${randomDistance}m</span><br>
+                <span>AZIMUTH: ${randomAzimuth}° | DISTANCE: ${Math.floor(Math.random() * 800) + 100}m</span><br>
                 <span>INTERCEPTOR DEPLOYED... </span>`;
             
             if (isSuccess) {
@@ -137,8 +226,8 @@
             }
             logHtml += `</div>`;
 
-            logContent.innerHTML = logHtml + logContent.innerHTML; 
-        }, 3500);
+            logContent.innerHTML = logHtml + logContent.innerHTML; // 새 로그를 위에 추가
+        }, 3500); // 3.5초마다 실행
     </script>
 </body>
 </html>
