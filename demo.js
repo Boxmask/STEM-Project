@@ -77,7 +77,28 @@ setInterval(() => {
 // =========================================
 // 비선형 크기 증가(커브) 동적 시뮬레이션 로직
 // =========================================
-const targetBox = document.getElementById('target-box'); // FPV용
+
+// [추가됨] 다각형 형태의 금지 구역 좌표 (초기 A,B,C,D 값 적용)
+const RESTRICTED_POLY = [
+    { id: 'A', x: 675, y: 644 },
+    { id: 'B', x: 382, y: 860 },
+    { id: 'C', x: 1552, y: 861 },
+    { id: 'D', x: 1433, y: 643 }
+];
+
+// [추가됨] 다각형 내부 검사 알고리즘 (Ray-Casting)
+function isRestricted(x, y) {
+    let inside = false;
+    for (let i = 0, j = RESTRICTED_POLY.length - 1; i < RESTRICTED_POLY.length; j = i++) {
+        let xi = RESTRICTED_POLY[i].x, yi = RESTRICTED_POLY[i].y;
+        let xj = RESTRICTED_POLY[j].x, yj = RESTRICTED_POLY[j].y;
+        let intersect = ((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+    }
+    return inside;
+}
+
+const targetBox = document.getElementById('target-box'); 
 const targetLabel = document.getElementById('target-label');
 const rpgGunnerBox = document.getElementById('rpg-gunner-box');
 const rpgGunnerLabel = document.getElementById('rpg-gunner-label');
@@ -86,15 +107,19 @@ const rpgProjectileBox = document.getElementById('rpg-projectile-box');
 // 고정된 목표 좌표 (픽셀 단위)
 const targetPixelX = 1009; 
 const targetPixelY = 741;
-const MAX_SIZE = 20; // 모든 투사체의 최대 크기 (%)
+const MAX_SIZE = 20; 
 
 function spawnFPV() {
-    let startX = window.innerWidth * ((20 + Math.random() * 60) / 100);
-    let startY = window.innerHeight * ((2 + Math.random() * 10) / 100); 
+    let startX, startY;
+
+    // [수정됨] 금지 구역 판별 로직 적용
+    do {
+        startX = window.innerWidth * ((20 + Math.random() * 60) / 100);
+        startY = window.innerHeight * ((2 + Math.random() * 10) / 100); 
+    } while (isRestricted(startX, startY));
     
     let timeTick = 0; 
 
-    // [수정됨] 화면에 표시하기 전 초기 좌표와 크기를 미리 할당하여 깜빡임 방지
     targetBox.style.left = startX + 'px';
     targetBox.style.top = startY + 'px';
     targetBox.style.width = '0%'; 
@@ -127,13 +152,17 @@ function spawnFPV() {
 
 function spawnTerroristAndRPG() {
     let gunnerSize = 5; 
+    let startX, startY;
     
-    let isLeft = Math.random() > 0.5;
-    let startPercentX = isLeft ? 5 + Math.random() * 15 : 80 + Math.random() * 15;
-    let startPercentY = 40 + Math.random() * 15;
+    // [수정됨] 금지 구역 판별 로직 적용
+    do {
+        let isLeft = Math.random() > 0.5;
+        let startPercentX = isLeft ? 5 + Math.random() * 15 : 80 + Math.random() * 15;
+        let startPercentY = 40 + Math.random() * 15;
 
-    let startX = window.innerWidth * (startPercentX / 100);
-    let startY = window.innerHeight * (startPercentY / 100);
+        startX = window.innerWidth * (startPercentX / 100);
+        startY = window.innerHeight * (startPercentY / 100);
+    } while (isRestricted(startX, startY));
 
     rpgGunnerBox.style.display = 'block';
     rpgGunnerBox.style.width = gunnerSize + '%';
@@ -145,7 +174,6 @@ function spawnTerroristAndRPG() {
     setTimeout(() => {
         let timeTick = 0;
 
-        // [수정됨] 화면에 표시하기 전 초기 좌표와 크기를 미리 할당하여 깜빡임 방지
         rpgProjectileBox.style.left = startX + 'px';
         rpgProjectileBox.style.top = startY + 'px';
         rpgProjectileBox.style.width = gunnerSize + '%';
@@ -180,7 +208,6 @@ function spawnTerroristAndRPG() {
     }, 500); 
 }
 
-// 두 가지 위협 중 무작위 선택하여 스폰
 function spawnRandomThreat() {
     if (Math.random() > 0.5) {
         spawnFPV();
@@ -189,43 +216,31 @@ function spawnRandomThreat() {
     }
 }
 
-// 최초 스폰 시작
 setTimeout(spawnRandomThreat, 1000);
 
 
 // =========================================================================
-// [디버그 모드 시작] 
+// [디버그 모드 시작] - 다각형 에디터 포함
 // =========================================================================
 
-// [디버그 모드에 추가] 스폰 금지 구역을 화면에 반투명 붉은색 박스로 표시
-const debugRestrictedZone = document.createElement('div');
-debugRestrictedZone.style.cssText = `position:fixed; left:${RESTRICTED_ZONE.xMin}px; top:${RESTRICTED_ZONE.yMin}px; width:${RESTRICTED_ZONE.xMax - RESTRICTED_ZONE.xMin}px; height:${RESTRICTED_ZONE.yMax - RESTRICTED_ZONE.yMin}px; background:rgba(255,0,0,0.2); border:1px solid red; pointer-events:none; z-index:9998;`;
-document.body.appendChild(debugRestrictedZone);
-
+// HTML UI를 자바스크립트를 통해 문서에 삽입
+const editorHTML = `
 <div id="zone-editor-ui" style="position:fixed; bottom:10px; left:10px; background:rgba(0,0,0,0.8); color:white; padding:15px; z-index:10000; font-family:monospace;">
     <strong>[금지 구역 에디터]</strong><br>
     점(빨간색 사각형)을 드래그하여 구역을 설정하세요.<br><br>
     <button id="btn-solve" style="padding:5px 10px; cursor:pointer;">SOLVE (코드 생성)</button><br><br>
     <textarea id="output-code" rows="10" cols="60" style="background:#222; color:lime; border:1px solid #555;"></textarea>
 </div>
-
 <svg id="zone-svg" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9998;">
     <polygon id="zone-polygon" points="" style="fill:rgba(255,0,0,0.3); stroke:red; stroke-width:2;"></polygon>
 </svg>
+`;
+document.body.insertAdjacentHTML('beforeend', editorHTML);
 
-<script>
-// 초기 A, B, C, D 좌표
-const corners = [
-    { id: 'A', x: 675, y: 644 },
-    { id: 'B', x: 382, y: 860 },
-    { id: 'C', x: 1552, y: 861 },
-    { id: 'D', x: 1433, y: 643 }
-];
-
+const corners = RESTRICTED_POLY; // 위에서 선언한 배열을 참조
 const handles = [];
 let dragIndex = -1;
 
-// 조작 핸들(빨간 점) 생성
 corners.forEach((corner, index) => {
     let handle = document.createElement('div');
     handle.style.cssText = `position:fixed; width:16px; height:16px; background:red; border:2px solid white; cursor:move; z-index:9999; transform:translate(-50%, -50%);`;
@@ -233,7 +248,6 @@ corners.forEach((corner, index) => {
     handle.style.top = corner.y + 'px';
     handle.title = corner.id;
     
-    // 마우스 누를 때 드래그 시작
     handle.addEventListener('mousedown', (e) => {
         dragIndex = index;
     });
@@ -242,7 +256,6 @@ corners.forEach((corner, index) => {
     handles.push(handle);
 });
 
-// 화면 전체 마우스 이동 이벤트 (드래그 처리)
 document.addEventListener('mousemove', (e) => {
     if (dragIndex !== -1) {
         corners[dragIndex].x = e.pageX;
@@ -253,46 +266,30 @@ document.addEventListener('mousemove', (e) => {
     }
 });
 
-// 마우스 떼면 드래그 종료
 document.addEventListener('mouseup', () => {
     dragIndex = -1;
 });
 
-// SVG 다각형 그리기 함수
 function drawPolygon() {
     const polygon = document.getElementById('zone-polygon');
     const pointsStr = corners.map(c => `${c.x},${c.y}`).join(' ');
     polygon.setAttribute('points', pointsStr);
 }
 
-// 초기 다각형 그리기
 drawPolygon();
 
-// SOLVE 버튼 클릭 시 코드 생성
 document.getElementById('btn-solve').addEventListener('click', () => {
     const output = document.getElementById('output-code');
     
-    let code = `// 1. 아래 코드를 복사하여 스폰 로직 위에 붙여넣으세요.\n`;
+    let code = `// 아래 코드를 복사하여 기존 RESTRICTED_POLY 부분을 대체하세요.\n`;
     code += `const RESTRICTED_POLY = [\n`;
     corners.forEach(c => {
-        code += `    { x: ${c.x}, y: ${c.y} }, // ${c.id}\n`;
+        code += `    { id: '${c.id}', x: ${c.x}, y: ${c.y} },\n`;
     });
-    code += `];\n\n`;
-    code += `// 다각형 내부 검사 알고리즘 (Ray-Casting)\n`;
-    code += `function isRestricted(x, y) {\n`;
-    code += `    let inside = false;\n`;
-    code += `    for (let i = 0, j = RESTRICTED_POLY.length - 1; i < RESTRICTED_POLY.length; j = i++) {\n`;
-    code += `        let xi = RESTRICTED_POLY[i].x, yi = RESTRICTED_POLY[i].y;\n`;
-    code += `        let xj = RESTRICTED_POLY[j].x, yj = RESTRICTED_POLY[j].y;\n`;
-    code += `        let intersect = ((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);\n`;
-    code += `        if (intersect) inside = !inside;\n`;
-    code += `    }\n`;
-    code += `    return inside;\n`;
-    code += `}\n`;
+    code += `];\n`;
 
     output.value = code;
 });
-</script>
 
 // =========================================================================
 // [디버그 모드 종료]
