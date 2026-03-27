@@ -237,6 +237,98 @@ const debugRestrictedZone = document.createElement('div');
 debugRestrictedZone.style.cssText = `position:fixed; left:${RESTRICTED_ZONE.xMin}px; top:${RESTRICTED_ZONE.yMin}px; width:${RESTRICTED_ZONE.xMax - RESTRICTED_ZONE.xMin}px; height:${RESTRICTED_ZONE.yMax - RESTRICTED_ZONE.yMin}px; background:rgba(255,0,0,0.2); border:1px solid red; pointer-events:none; z-index:9998;`;
 document.body.appendChild(debugRestrictedZone);
 
+<div id="zone-editor-ui" style="position:fixed; bottom:10px; left:10px; background:rgba(0,0,0,0.8); color:white; padding:15px; z-index:10000; font-family:monospace;">
+    <strong>[금지 구역 에디터]</strong><br>
+    점(빨간색 사각형)을 드래그하여 구역을 설정하세요.<br><br>
+    <button id="btn-solve" style="padding:5px 10px; cursor:pointer;">SOLVE (코드 생성)</button><br><br>
+    <textarea id="output-code" rows="10" cols="60" style="background:#222; color:lime; border:1px solid #555;"></textarea>
+</div>
+
+<svg id="zone-svg" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9998;">
+    <polygon id="zone-polygon" points="" style="fill:rgba(255,0,0,0.3); stroke:red; stroke-width:2;"></polygon>
+</svg>
+
+<script>
+// 초기 A, B, C, D 좌표
+const corners = [
+    { id: 'A', x: 675, y: 644 },
+    { id: 'B', x: 382, y: 860 },
+    { id: 'C', x: 1552, y: 861 },
+    { id: 'D', x: 1433, y: 643 }
+];
+
+const handles = [];
+let dragIndex = -1;
+
+// 조작 핸들(빨간 점) 생성
+corners.forEach((corner, index) => {
+    let handle = document.createElement('div');
+    handle.style.cssText = `position:fixed; width:16px; height:16px; background:red; border:2px solid white; cursor:move; z-index:9999; transform:translate(-50%, -50%);`;
+    handle.style.left = corner.x + 'px';
+    handle.style.top = corner.y + 'px';
+    handle.title = corner.id;
+    
+    // 마우스 누를 때 드래그 시작
+    handle.addEventListener('mousedown', (e) => {
+        dragIndex = index;
+    });
+    
+    document.body.appendChild(handle);
+    handles.push(handle);
+});
+
+// 화면 전체 마우스 이동 이벤트 (드래그 처리)
+document.addEventListener('mousemove', (e) => {
+    if (dragIndex !== -1) {
+        corners[dragIndex].x = e.pageX;
+        corners[dragIndex].y = e.pageY;
+        handles[dragIndex].style.left = e.pageX + 'px';
+        handles[dragIndex].style.top = e.pageY + 'px';
+        drawPolygon();
+    }
+});
+
+// 마우스 떼면 드래그 종료
+document.addEventListener('mouseup', () => {
+    dragIndex = -1;
+});
+
+// SVG 다각형 그리기 함수
+function drawPolygon() {
+    const polygon = document.getElementById('zone-polygon');
+    const pointsStr = corners.map(c => `${c.x},${c.y}`).join(' ');
+    polygon.setAttribute('points', pointsStr);
+}
+
+// 초기 다각형 그리기
+drawPolygon();
+
+// SOLVE 버튼 클릭 시 코드 생성
+document.getElementById('btn-solve').addEventListener('click', () => {
+    const output = document.getElementById('output-code');
+    
+    let code = `// 1. 아래 코드를 복사하여 스폰 로직 위에 붙여넣으세요.\n`;
+    code += `const RESTRICTED_POLY = [\n`;
+    corners.forEach(c => {
+        code += `    { x: ${c.x}, y: ${c.y} }, // ${c.id}\n`;
+    });
+    code += `];\n\n`;
+    code += `// 다각형 내부 검사 알고리즘 (Ray-Casting)\n`;
+    code += `function isRestricted(x, y) {\n`;
+    code += `    let inside = false;\n`;
+    code += `    for (let i = 0, j = RESTRICTED_POLY.length - 1; i < RESTRICTED_POLY.length; j = i++) {\n`;
+    code += `        let xi = RESTRICTED_POLY[i].x, yi = RESTRICTED_POLY[i].y;\n`;
+    code += `        let xj = RESTRICTED_POLY[j].x, yj = RESTRICTED_POLY[j].y;\n`;
+    code += `        let intersect = ((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);\n`;
+    code += `        if (intersect) inside = !inside;\n`;
+    code += `    }\n`;
+    code += `    return inside;\n`;
+    code += `}\n`;
+
+    output.value = code;
+});
+</script>
+
 // =========================================================================
 // [디버그 모드 종료]
 // =========================================================================
