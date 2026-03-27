@@ -83,13 +83,28 @@ let targetPixelX = 1009;
 let targetPixelY = 761;
 
 const SPAWN_POINTS_FPV = [
-    { id: 'F1', x: 200, y: 150 },
-    { id: 'F2', x: 800, y: 150 }
+    { id: 'F3', x: 798, y: 219 },
+    { id: 'F4', x: 1178, y: 223 },
+    { id: 'F5', x: 804, y: 322 },
+    { id: 'F6', x: 995, y: 310 },
+    { id: 'F7', x: 1167, y: 347 },
+    { id: 'F8', x: 889, y: 319 },
+    { id: 'F9', x: 695, y: 258 },
+    { id: 'F10', x: 1087, y: 413 },
+    { id: 'F11', x: 956, y: 392 },
+    { id: 'F12', x: 1091, y: 301 },
 ];
 
 const SPAWN_POINTS_RPG = [
-    { id: 'R1', x: 150, y: 600 },
-    { id: 'R2', x: 1200, y: 600 }
+    { id: 'R3', x: 904, y: 554 },
+    { id: 'R4', x: 1047, y: 559 },
+    { id: 'R5', x: 617, y: 596 },
+    { id: 'R6', x: 505, y: 684 },
+    { id: 'R7', x: 1237, y: 606 },
+    { id: 'R8', x: 796, y: 563 },
+    { id: 'R9', x: 1147, y: 551 },
+    { id: 'R10', x: 981, y: 542 },
+    { id: 'R11', x: 898, y: 526 },
 ];
 
 const targetBox = document.getElementById('target-box'); 
