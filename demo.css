@@ -117,10 +117,10 @@ body { background-color: #000; color: #0f0; font-family: monospace; }
     display: none; 
 }
 
-/* 사수(Gunner) 애니메이션을 위한 상태 클래스 추가 */
+/* 사수(Gunner) 애니메이션을 위한 상태 클래스 */
 .fade-left {
     opacity: 0;
-    transform: translateX(-50px);
+    transform: translateX(-15px); /* 50px에서 15px로 축소 */
 }
 .fade-center {
     opacity: 1;
@@ -128,7 +128,7 @@ body { background-color: #000; color: #0f0; font-family: monospace; }
 }
 .fade-right {
     opacity: 0;
-    transform: translateX(50px);
+    transform: translateX(15px); /* 50px에서 15px로 축소 */
 }
 
 /* RPG 이미지 스프라이트 */
