@@ -18,10 +18,19 @@
         .view-screen { height: 500px; padding: 20px; display: none; background: #111; position: relative; overflow: hidden; }
         .view-screen.active { display: block; }
         
-        /* 카메라 화면 (가상의 타겟 박스) */
+        /* 카메라 화면 (배경 및 타겟 박스) */
         #camera-view { background: url('APS.webp') center/cover; }
-        .target-box { position: absolute; border: 2px solid red; width: 50px; height: 50px; top: 40%; left: 30%; }
+        .target-box { position: absolute; border: 2px solid red; width: 50px; height: 50px; top: 40%; left: 30%; z-index: 5;}
         .target-label { color: red; background: rgba(0,0,0,0.7); font-size: 0.8rem; position: absolute; top: -20px; left: 0; white-space: nowrap; }
+        
+        /* HUD 오버레이 전용 CSS */
+        .hud-mode { position: absolute; top: 15px; left: 15px; font-size: 1.2rem; font-weight: bold; z-index: 10; text-shadow: 1px 1px 2px #000; }
+        .hud-time { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); font-size: 1.2rem; font-weight: bold; z-index: 10; text-shadow: 1px 1px 2px #000; }
+        .hud-azimuth { position: absolute; bottom: 15px; right: 15px; text-align: center; z-index: 10; }
+        
+        .azimuth-indicator { width: 60px; height: 60px; border: 2px solid #0f0; border-radius: 50%; position: relative; margin-bottom: 5px; background: rgba(0, 20, 0, 0.5); }
+        .hull-icon { width: 16px; height: 30px; border: 1.5px solid #0f0; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .turret-bar { width: 2px; height: 30px; background: #0f0; position: absolute; top: 50%; left: 50%; transform-origin: bottom center; transform: translate(-50%, -100%) rotate(0deg); transition: transform 0.3s ease-out; }
         
         /* 로그 화면 */
         #log-view { overflow-y: scroll; color: #0f0; }
@@ -46,9 +55,18 @@
         </div>
 
         <div id="camera-view" class="view-screen active">
-            <div style="color: #fff; background: rgba(0,0,0,0.5); padding: 5px; display: inline-block;">OPTICAL SENSOR: ONLINE</div>
-            <div class="target-box">
-                <div class="target-label">ID: ATGM (HOSTILE)</div>
+            <div class="hud-mode">SENSOR: <span id="camera-mode-val">OPTICAL</span></div>
+            <div class="hud-time" id="hud-time-display">00:00:00</div>
+            <div class="hud-azimuth">
+                <div class="azimuth-indicator">
+                    <div class="hull-icon"></div>
+                    <div class="turret-bar" id="turret-bar"></div>
+                </div>
+                <div class="azimuth-text"><span id="azimuth-val">0</span>°</div>
+            </div>
+
+            <div class="target-box" id="target-box">
+                <div class="target-label" id="target-label">ID: ATGM (HOSTILE)</div>
             </div>
         </div>
 
@@ -75,20 +93,41 @@
             viewLog.classList.add('active'); viewCamera.classList.remove('active');
         });
 
-        // 2. 가상 로그 생성 기능
+        // 2. HUD 실시간 시계 기능
+        const timeDisplay = document.getElementById('hud-time-display');
+        setInterval(() => {
+            const now = new Date();
+            // 시, 분, 초를 두 자리 수로 포맷팅
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            timeDisplay.innerText = `${hours}:${minutes}:${seconds}`;
+        }, 1000);
+
+        // 3. 가상 로그 생성 및 포탑 각도 연동 기능
         const logContent = document.getElementById('log-content');
+        const turretBar = document.getElementById('turret-bar');
+        const azimuthVal = document.getElementById('azimuth-val');
         const threats = ['ATGM', 'RPG-7', 'Loitering Munition'];
         
         setInterval(() => {
             const now = new Date();
-            const timeStr = now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
+            const timeStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0') + ":" + String(now.getSeconds()).padStart(2, '0');
+            
             const randomThreat = threats[Math.floor(Math.random() * threats.length)];
-            const isSuccess = Math.random() > 0.1; // 90% 요격 성공 확률
+            const isSuccess = Math.random() > 0.1; 
+            const randomAzimuth = Math.floor(Math.random() * 360); // 0~359도 무작위 각도 생성
+            const randomDistance = Math.floor(Math.random() * 800) + 100;
 
+            // 포탑 각도 인디케이터 시각적 업데이트
+            turretBar.style.transform = `translate(-50%, -100%) rotate(${randomAzimuth}deg)`;
+            azimuthVal.innerText = randomAzimuth;
+
+            // 로그 출력 처리
             let logHtml = `<div class="log-entry">
                 <span class="log-time">[${timeStr}]</span>
                 <span class="log-alert">WARNING: INCOMING ${randomThreat} DETECTED.</span><br>
-                <span>AZIMUTH: ${Math.floor(Math.random() * 360)}° | DISTANCE: ${Math.floor(Math.random() * 800) + 100}m</span><br>
+                <span>AZIMUTH: ${randomAzimuth}° | DISTANCE: ${randomDistance}m</span><br>
                 <span>INTERCEPTOR DEPLOYED... </span>`;
             
             if (isSuccess) {
@@ -98,8 +137,8 @@
             }
             logHtml += `</div>`;
 
-            logContent.innerHTML = logHtml + logContent.innerHTML; // 새 로그를 위에 추가
-        }, 3500); // 3.5초마다 실행
+            logContent.innerHTML = logHtml + logContent.innerHTML; 
+        }, 3500);
     </script>
 </body>
 </html>
