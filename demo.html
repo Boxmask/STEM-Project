@@ -25,23 +25,44 @@
             background-position: center;
             cursor: pointer; 
         }
-        #camera-view.ir-mode { filter: invert(100%) grayscale(100%) contrast(150%); }
+
+        /* -----------------------------------------------------------
+           [수정 부분] IR 모드 CSS 필터 및 타겟 라벨 가독성 개선
+           ----------------------------------------------------------- */
+        /* 1. IR 모드 필터 적용 */
+        #camera-view.ir-mode {
+            filter: invert(100%) grayscale(100%) contrast(150%);
+        }
+
+        /* 2. IR 모드일 때 타겟 라벨 텍스트 가독성 확보 (검은색으로 출력)
+           부모의 invert(100%) 필터에 의해 흰색(white)이 검은색으로 반전되어 출력됩니다. */
+        #camera-view.ir-mode .target-label {
+            color: white; 
+            background: rgba(255, 255, 255, 0.7); /* 배경 박스도 가독성을 위해 조정 */
+        }
+        /* ----------------------------------------------------------- */
 
         .target-box { position: absolute; border: 2px solid red; width: 50px; height: 50px; top: 40%; left: 30%; z-index: 5;}
-        .target-label { color: red; background: rgba(0,0,0,0.7); font-size: 0.8rem; position: absolute; top: -20px; left: 0; white-space: nowrap; }
+        
+        /* 기본 상태 타겟 라벨 (Optical 모드) */
+        .target-label {
+            color: red;
+            background: rgba(0,0,0,0.7);
+            font-size: 0.8rem;
+            position: absolute;
+            top: -20px;
+            left: 0;
+            white-space: nowrap;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
 
         /* HUD 오버레이 전용 CSS */
         .hud-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; color: #0f0; padding: 20px; box-sizing: border-box; z-index: 10; }
-        
-        /* 1. 좌측 상단 모드 표시 */
         .hud-mode { position: absolute; top: 15px; left: 15px; font-size: 1.2rem; font-weight: bold; text-shadow: 1px 1px 2px #000; }
-        
-        /* 1. 중앙 상단 상태 및 시간 그룹 */
         .hud-top-center { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); text-align: center; display: flex; flex-direction: column; gap: 5px; }
         .hud-status { font-size: 1rem; font-weight: bold; text-shadow: 1px 1px 2px #000; }
         .hud-time { font-size: 1.2rem; font-weight: bold; text-shadow: 1px 1px 2px #000; }
-        
-        /* 2. 우측 하단 방위각 UI (크기 확대) */
         .hud-azimuth { position: absolute; bottom: 15px; right: 15px; text-align: center; }
         .azimuth-indicator { width: 90px; height: 90px; border: 2px solid #0f0; border-radius: 50%; position: relative; margin-bottom: 5px; background: rgba(0, 20, 0, 0.5); }
         .hull-icon { width: 24px; height: 45px; border: 1.5px solid #0f0; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
