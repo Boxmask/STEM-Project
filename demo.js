@@ -1,9 +1,10 @@
 // =========================================
-// 1. [교정] 퍼센트 기반 좌표 데이터
+// 1. 고정 데이터 및 시스템 설정 (퍼센트% 기반으로 교정)
 // =========================================
-// 화면 왼쪽에서 몇 %, 위에서 몇 % 지점인지로 계산됨
-let targetX_pc = 84.08; // 목표 지점 X%
-let targetY_pc = 112.74; // 목표 지점 Y%
+
+// [교정] 목표 및 스폰 지점을 화면 대비 % 좌표로 관리합니다.
+let targetX_pc = 84.08; 
+let targetY_pc = 85.00; 
 
 const SPAWN_POINTS_FPV = [
     { x_pc: 16.67, y_pc: 22.22 }, { x_pc: 66.67, y_pc: 22.22 }, { x_pc: 66.50, y_pc: 32.44 },
@@ -19,124 +20,55 @@ const SPAWN_POINTS_RPG = [
     { x_pc: 81.75, y_pc: 80.30 }, { x_pc: 74.83, y_pc: 77.93 }
 ];
 
-// =========================================
-// 2. [교정] 정밀 스폰 및 이동 엔진
-// =========================================
+const viewCamera = document.getElementById('camera-view');
+const logContent = document.getElementById('log-content');
+const turretBar = document.getElementById('turret-bar');
+const azimuthVal = document.getElementById('azimuth-val');
+const targetBox = document.getElementById('target-box');
+const rpgGunnerBox = document.getElementById('rpg-gunner-box');
+const rpgProjectileBox = document.getElementById('rpg-projectile-box');
+const cameraModeVal = document.getElementById('camera-mode-val');
+const hudStatusVal = document.getElementById('hud-status-val');
 
-function launchProjectile(box, startX_pc, startY_pc, speed, baseSize, willIntercept, interceptAt, logRes) {
-    let timeTick = 0;
+const INTERCEPT_CHANCE = 0.82; 
+const MAX_SIZE = 20;
 
-    // 시작 시점에 위치를 즉시 할당 (이전 위치 잔상 제거)
-    box.style.left = startX_pc + '%';
-    box.style.top = startY_pc + '%';
-    box.style.display = 'block';
-    box.style.transform = 'translate(-50%, -50%)'; 
-
-    const moveLoop = setInterval(() => {
-        timeTick += speed;
-        if (timeTick > 1) timeTick = 1;
-
-        // 모든 계산은 % 단위로 진행되어 화면 크기에 영향을 받지 않음
-        const curX = startX_pc + (targetX_pc - startX_pc) * timeTick;
-        const curY = startY_pc + (targetY_pc - startY_pc) * timeTick;
-        const curSize = baseSize + (20 - baseSize) * Math.pow(timeTick, 1.5);
-
-        box.style.left = curX + '%';
-        box.style.top = curY + '%';
-        box.style.width = curSize + '%';
-
-        if (willIntercept && timeTick >= interceptAt) {
-            clearInterval(moveLoop);
-            box.style.display = 'none';
-            
-            // 폭발 이펙트 위치를 %에서 px로 변환하여 생성
-            const viewRect = viewCamera.getBoundingClientRect();
-            const expX = (curX / 100) * viewRect.width;
-            const expY = (curY / 100) * viewRect.height;
-            createExplosion(expX, expY);
-            
-            logRes.innerHTML = `<span class="log-success">NEUTRALIZED.</span>`;
-            setTimeout(nextWave, 1500);
-            return;
-        }
-
-        if (timeTick >= 1) {
-            clearInterval(moveLoop);
-            box.style.display = 'none';
-            logRes.innerHTML = `<span class="log-alert">IMPACT!</span>`;
-            setTimeout(nextWave, 1500);
-        }
-    }, 30);
-}
-
-function startAttack(type) {
-    const isFPV = type === 'FPV';
-    const points = isFPV ? SPAWN_POINTS_FPV : SPAWN_POINTS_RPG;
-    const spawn = points[Math.floor(Math.random() * points.length)];
-    const box = isFPV ? targetBox : rpgProjectileBox;
-    
-    const startX = spawn.x_pc;
-    const startY = spawn.y_pc;
-    const willIntercept = Math.random() <= INTERCEPT_CHANCE;
-    const interceptAt = 0.5 + (Math.random() * 0.1);
-
-    const logRes = updateHUD(isFPV ? 'FPV DRONE' : 'RPG-7', startX, startY);
-
-    if (!isFPV) {
-        // 사수도 % 좌표로 배치
-        rpgGunnerBox.style.display = 'block';
-        rpgGunnerBox.style.left = startX + '%';
-        rpgGunnerBox.style.top = startY + '%';
-        rpgGunnerBox.className = 'rpg-gunner-box fade-left';
-        void rpgGunnerBox.offsetWidth;
-        rpgGunnerBox.classList.replace('fade-left', 'fade-center');
-        
-        setTimeout(() => launchProjectile(box, startX, startY, 0.035, 5, willIntercept, interceptAt, logRes), 600);
-        setTimeout(() => {
-            rpgGunnerBox.classList.replace('fade-center', 'fade-right');
-            setTimeout(() => { rpgGunnerBox.style.display = 'none'; }, 500);
-        }, 2000);
-    } else {
-        launchProjectile(box, startX, startY, 0.008, 0, willIntercept, interceptAt, logRes);
-    }
-}
 // =========================================
 // 2. 핵심 시뮬레이션 엔진
 // =========================================
 
-function createExplosion(x, y) {
+function createExplosion(x_pc, y_pc) {
     const exp = document.createElement('div');
     exp.className = 'explosion-effect';
-    exp.style.left = `${x}px`;
-    exp.style.top = `${y}px`;
+    // % 위치를 그대로 적용 (CSS에서 부모 relative 설정 필요)
+    exp.style.left = `${x_pc}%`;
+    exp.style.top = `${y_pc}%`;
     viewCamera.appendChild(exp);
     void exp.offsetWidth; 
     exp.classList.add('fade');
     setTimeout(() => exp.remove(), 400);
 }
 
-function updateHUD(name, startX, startY) {
+function updateHUD(name, startX_pc, startY_pc) {
     const now = new Date();
     const time = now.toTimeString().split(' ')[0];
-    const dx = startX - targetPixelX;
-    const dy = startY - targetPixelY;
     
-    // 방위각 계산 보정
+    // % 좌표를 이용한 방위각 계산
+    const dx = startX_pc - targetX_pc;
+    const dy = startY_pc - targetY_pc;
     let angle = Math.round(Math.atan2(dy, dx) * (180 / Math.PI)) + 90;
     if (angle < 0) angle += 360;
-    const dist = Math.round(Math.sqrt(dx * dx + dy * dy));
+    
+    // 화면 실제 픽셀 너비를 기준으로 거리 계산 (시각적 보정)
+    const dist = Math.round(Math.sqrt(dx * dx + dy * dy) * 5.5);
 
     turretBar.style.transform = `translate(-50%, -100%) rotate(${angle}deg)`;
     azimuthVal.innerText = angle;
 
     const entry = document.createElement('div');
     entry.className = 'log-entry';
-    entry.innerHTML = `
-        <span class="log-time">[${time}]</span>
-        <span class="log-alert">WARNING: ${name} DETECTED.</span><br>
-        <span>AZIMUTH: ${angle}° | DISTANCE: ${dist}m</span><br>
-        <span>STATUS: <span class="res" style="color: #ff0;">INTERCEPTING...</span></span>
-    `;
+    entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-alert">${name} DETECTED.</span><br>
+                       <span>AZIMUTH: ${angle}° | DIST: ${dist}m</span> <span class="res">...</span>`;
     logContent.prepend(entry);
     return entry.querySelector('.res');
 }
@@ -146,61 +78,51 @@ function startAttack(type) {
     const points = isFPV ? SPAWN_POINTS_FPV : SPAWN_POINTS_RPG;
     const spawn = points[Math.floor(Math.random() * points.length)];
     const box = isFPV ? targetBox : rpgProjectileBox;
-    
-    let timeTick = 0;
-    const startX = spawn.x;
-    const startY = spawn.y;
+
+    const startX = spawn.x_pc;
+    const startY = spawn.y_pc;
     const willIntercept = Math.random() <= INTERCEPT_CHANCE;
     const interceptAt = 0.5 + (Math.random() * 0.1); 
 
     const logRes = updateHUD(isFPV ? 'FPV DRONE' : 'RPG WARHEAD', startX, startY);
 
     if (!isFPV) {
-        // 사수 초기 위치 설정 (보임 처리 전)
-        rpgGunnerBox.style.transition = 'none';
-        rpgGunnerBox.style.left = `${startX}px`;
-        rpgGunnerBox.style.top = `${startY}px`;
-        rpgGunnerBox.className = 'rpg-gunner-box fade-left';
         rpgGunnerBox.style.display = 'block';
-
-        void rpgGunnerBox.offsetWidth; 
-        rpgGunnerBox.style.transition = 'opacity 0.5s, transform 0.5s';
+        rpgGunnerBox.style.left = `${startX}%`;
+        rpgGunnerBox.style.top = `${startY}%`;
+        rpgGunnerBox.className = 'rpg-gunner-box fade-left';
+        void rpgGunnerBox.offsetWidth;
         rpgGunnerBox.classList.replace('fade-left', 'fade-center');
-        
-        setTimeout(() => launchProjectile(box, startX, startY, 0.035, 5, willIntercept, interceptAt, logRes), 600);
-        
+
+        setTimeout(() => launch(box, startX, startY, 0.035, 5, willIntercept, interceptAt, logRes), 600);
         setTimeout(() => {
             rpgGunnerBox.classList.replace('fade-center', 'fade-right');
             setTimeout(() => { rpgGunnerBox.style.display = 'none'; }, 500);
         }, 2000);
     } else {
-        launchProjectile(box, startX, startY, 0.008, 0, willIntercept, interceptAt, logRes);
+        launch(box, startX, startY, 0.008, 0, willIntercept, interceptAt, logRes);
     }
 }
 
-function launchProjectile(box, startX, startY, speed, baseSize, willIntercept, interceptAt, logRes) {
-    // 발사 전 초기 좌표 강제 고정 (이전 위치 잔상 방지)
-    box.style.left = `${startX}px`;
-    box.style.top = `${startY}px`;
-    box.style.width = `${baseSize}%`;
+function launch(box, startX, startY, speed, baseSize, willIntercept, interceptAt, logRes) {
+    let timeTick = 0;
     box.style.display = 'block';
+    box.style.transform = 'translate(-50%, -50%)';
 
-    const moveLoop = setInterval(() => {
-        let timeTick = (arguments.timeTick || 0) + speed;
-        arguments.timeTick = timeTick; 
-
+    const loop = setInterval(() => {
+        timeTick += speed;
         if (timeTick > 1) timeTick = 1;
 
+        const curX = startX + (targetX_pc - startX) * timeTick;
+        const curY = startY + (targetY_pc - startY) * timeTick;
         const curSize = baseSize + (MAX_SIZE - baseSize) * Math.pow(timeTick, 1.5);
-        const curX = startX + (targetPixelX - startX) * timeTick;
-        const curY = startY + (targetPixelY - startY) * timeTick;
 
+        box.style.left = `${curX}%`;
+        box.style.top = `${curY}%`;
         box.style.width = `${curSize}%`;
-        box.style.left = `${curX}px`;
-        box.style.top = `${curY}px`;
 
         if (willIntercept && timeTick >= interceptAt) {
-            clearInterval(moveLoop);
+            clearInterval(loop);
             box.style.display = 'none';
             createExplosion(curX, curY);
             logRes.innerHTML = `<span class="log-success">NEUTRALIZED.</span>`;
@@ -209,9 +131,9 @@ function launchProjectile(box, startX, startY, speed, baseSize, willIntercept, i
         }
 
         if (timeTick >= 1) {
-            clearInterval(moveLoop);
+            clearInterval(loop);
             box.style.display = 'none';
-            logRes.innerHTML = `<span class="log-alert">IMPACT! BRACE!</span>`;
+            logRes.innerHTML = `<span class="log-alert">IMPACT!</span>`;
             setTimeout(nextWave, 1500);
         }
     }, 30);
@@ -221,24 +143,22 @@ function nextWave() {
     startAttack(Math.random() > 0.5 ? 'FPV' : 'RPG');
 }
 
-// =========================================
-// 3. UI 제어 및 초기화
-// =========================================
-
+// UI 이벤트 리스너
 document.getElementById('btn-camera').onclick = () => {
-    viewCamera.classList.add('active'); viewLog.classList.remove('active');
+    viewCamera.classList.add('active'); 
+    document.getElementById('log-view').classList.remove('active');
     document.getElementById('btn-camera').classList.add('active');
     document.getElementById('btn-log').classList.remove('active');
 };
 document.getElementById('btn-log').onclick = () => {
-    viewLog.classList.add('active'); viewCamera.classList.remove('active');
+    document.getElementById('log-view').classList.add('active');
+    viewCamera.classList.remove('active');
     document.getElementById('btn-log').classList.add('active');
-    document.getElementById('btn-camera').classList.add('active');
+    document.getElementById('btn-camera').classList.remove('active');
 };
 
 setInterval(() => {
-    const now = new Date();
-    document.getElementById('hud-time-display').innerText = now.toTimeString().split(' ')[0];
+    document.getElementById('hud-time-display').innerText = new Date().toTimeString().split(' ')[0];
 }, 1000);
 
 viewCamera.onclick = () => {
@@ -248,110 +168,93 @@ viewCamera.onclick = () => {
     viewCamera.classList.toggle('ir-mode');
 };
 
-// 최초 실행
 setTimeout(nextWave, 1000);
 
 // =========================================================================
-// [디버그 모드 시작] - 스폰 포인트 관리 툴
+// [디버그 모드] - 반응형(%) 스폰 포인트 관리 툴
 // =========================================================================
 
 const editorHTML = `
-<div id="zone-editor-ui" style="position:fixed; bottom:10px; left:10px; background:rgba(0,0,0,0.8); color:white; padding:15px; z-index:10000; font-family:monospace;">
-    <strong>[디버그 툴: 스폰 포인트 설정]</strong><br>
-    - 노란 원: FPV 드론 스폰 (드래그)<br>
-    - 주황 사각형: RPG 사수 스폰 (드래그)<br>
-    - 파란 원: 투사체 목표 지점 (드래그)<br><br>
-    <button id="btn-add-fpv" style="padding:5px 10px; cursor:pointer; background:#880; color:white; border:1px solid yellow;">+ FPV 스폰</button>
-    <button id="btn-add-rpg" style="padding:5px 10px; cursor:pointer; background:#840; color:white; border:1px solid orange;">+ RPG 스폰</button>
-    <button id="btn-solve" style="padding:5px 10px; cursor:pointer; background:#050; color:white; border:1px solid lime;">SOLVE (코드 생성)</button><br><br>
-    <textarea id="output-code" rows="12" cols="60" style="background:#222; color:lime; border:1px solid #555;"></textarea>
+<div id="zone-editor-ui" style="position:fixed; bottom:10px; left:10px; background:rgba(0,0,0,0.9); color:white; padding:15px; z-index:10000; font-family:monospace; border:1px solid #555;">
+    <strong>[반응형 디버그 툴]</strong><br>
+    - 점들은 카메라 화면 내부(%)로 고정됩니다.<br><br>
+    <button id="btn-add-fpv" style="padding:5px; cursor:pointer; background:#880; color:white;">+ FPV</button>
+    <button id="btn-add-rpg" style="padding:5px; cursor:pointer; background:#840; color:white;">+ RPG</button>
+    <button id="btn-solve" style="padding:5px; cursor:pointer; background:#050; color:white; border:1px solid lime;">SOLVE</button><br><br>
+    <textarea id="output-code" rows="10" cols="55" style="background:#111; color:lime; border:1px solid #444; font-size:11px;"></textarea>
 </div>
 `;
 document.body.insertAdjacentHTML('beforeend', editorHTML);
 
-let dragTarget = null; 
-let nextFpvId = 3;
-let nextRpgId = 3;
+let dragTarget = null;
 
-let targetPt = { id: 'TARGET', x: targetPixelX, y: targetPixelY, type: 'TARGET' };
-createHandle(targetPt);
+function createHandle(pt, type) {
+    const handle = document.createElement('div');
+    // 초기 픽셀 좌표가 들어올 경우 %로 자동 변환하여 핸들 배치
+    let left = pt.x_pc || (pt.x / viewCamera.offsetWidth * 100);
+    let top = pt.y_pc || (pt.y / viewCamera.offsetHeight * 100);
+    
+    handle.style.cssText = `position:absolute; cursor:move; z-index:9999; transform:translate(-50%, -50%); border:1px solid #000;`;
+    handle.style.left = left + '%';
+    handle.style.top = top + '%';
+    
+    pt.x_pc = left.toFixed(2);
+    pt.y_pc = top.toFixed(2);
 
-SPAWN_POINTS_FPV.forEach(pt => createHandle({...pt, type: 'FPV'}));
-SPAWN_POINTS_RPG.forEach(pt => createHandle({...pt, type: 'RPG'}));
-
-function createHandle(pt) {
-    let handle = document.createElement('div');
-    handle.style.cssText = `position:fixed; cursor:move; z-index:9999; transform:translate(-50%, -50%); border:2px solid black;`;
-    handle.style.left = pt.x + 'px';
-    handle.style.top = pt.y + 'px';
-    handle.title = pt.id;
-
-    if (pt.type === 'FPV') {
-        handle.style.width = '16px'; handle.style.height = '16px';
+    if (type === 'FPV') {
+        handle.style.width = '14px'; handle.style.height = '14px';
         handle.style.background = 'yellow'; handle.style.borderRadius = '50%';
-    } else if (pt.type === 'RPG') {
-        handle.style.width = '16px'; handle.style.height = '16px';
+    } else if (type === 'RPG') {
+        handle.style.width = '14px'; handle.style.height = '14px';
         handle.style.background = 'orange';
-    } else if (pt.type === 'TARGET') {
+    } else {
         handle.style.width = '20px'; handle.style.height = '20px';
         handle.style.background = 'blue'; handle.style.borderRadius = '50%';
         handle.style.border = '2px solid white';
     }
 
     handle.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
         dragTarget = { point: pt, element: handle };
     });
-    
-    document.body.appendChild(handle);
+    viewCamera.appendChild(handle);
 }
 
-document.getElementById('btn-add-fpv').addEventListener('click', () => {
-    let newPt = { id: 'F' + (nextFpvId++), x: window.innerWidth / 2, y: window.innerHeight / 2, type: 'FPV' };
-    SPAWN_POINTS_FPV.push(newPt);
-    createHandle(newPt);
-});
-
-document.getElementById('btn-add-rpg').addEventListener('click', () => {
-    let newPt = { id: 'R' + (nextRpgId++), x: window.innerWidth / 2, y: window.innerHeight / 2, type: 'RPG' };
-    SPAWN_POINTS_RPG.push(newPt);
-    createHandle(newPt);
-});
+// 초기 핸들 생성
+SPAWN_POINTS_FPV.forEach(pt => createHandle(pt, 'FPV'));
+SPAWN_POINTS_RPG.forEach(pt => createHandle(pt, 'RPG'));
+createHandle({id: 'TARGET', x_pc: targetX_pc, y_pc: targetY_pc}, 'TARGET');
 
 document.addEventListener('mousemove', (e) => {
     if (dragTarget) {
-        dragTarget.point.x = e.pageX;
-        dragTarget.point.y = e.pageY;
-        dragTarget.element.style.left = e.pageX + 'px';
-        dragTarget.element.style.top = e.pageY + 'px';
+        const rect = viewCamera.getBoundingClientRect();
+        let x_pc = ((e.clientX - rect.left) / rect.width) * 100;
+        let y_pc = ((e.clientY - rect.top) / rect.height) * 100;
 
-        if (dragTarget.point.type === 'TARGET') {
-            targetPixelX = e.pageX;
-            targetPixelY = e.pageY;
+        dragTarget.point.x_pc = x_pc.toFixed(2);
+        dragTarget.point.y_pc = y_pc.toFixed(2);
+        dragTarget.element.style.left = x_pc + '%';
+        dragTarget.element.style.top = y_pc + '%';
+
+        if (dragTarget.point.id === 'TARGET') {
+            targetX_pc = x_pc.toFixed(2);
+            targetY_pc = y_pc.toFixed(2);
         }
     }
 });
 
-document.addEventListener('mouseup', () => {
-    dragTarget = null;
-});
+document.addEventListener('mouseup', () => { dragTarget = null; });
 
-document.getElementById('btn-solve').addEventListener('click', () => {
+document.getElementById('btn-add-fpv').onclick = () => createHandle({id:'F_NEW', x_pc:50, y_pc:50}, 'FPV');
+document.getElementById('btn-add-rpg').onclick = () => createHandle({id:'R_NEW', x_pc:50, y_pc:50}, 'RPG');
+
+document.getElementById('btn-solve').onclick = () => {
     const output = document.getElementById('output-code');
-    
-    let code = `let targetPixelX = ${targetPixelX};\n`;
-    code += `let targetPixelY = ${targetPixelY};\n\n`;
-    
+    let code = `let targetX_pc = ${targetX_pc};\nlet targetY_pc = ${targetY_pc};\n\n`;
     code += `const SPAWN_POINTS_FPV = [\n`;
-    SPAWN_POINTS_FPV.forEach(p => { code += `    { id: '${p.id}', x: ${p.x}, y: ${p.y} },\n`; });
-    code += `];\n\n`;
-
-    code += `const SPAWN_POINTS_RPG = [\n`;
-    SPAWN_POINTS_RPG.forEach(p => { code += `    { id: '${p.id}', x: ${p.x}, y: ${p.y} },\n`; });
-    code += `];\n`;
-
+    SPAWN_POINTS_FPV.forEach(p => { code += `    { x_pc: ${p.x_pc}, y_pc: ${p.y_pc} },\n`; });
+    code += `];\n\nconst SPAWN_POINTS_RPG = [\n`;
+    SPAWN_POINTS_RPG.forEach(p => { code += `    { x_pc: ${p.x_pc}, y_pc: ${p.y_pc} },\n`; });
+    code += `];`;
     output.value = code;
-});
-
-// =========================================================================
-// [디버그 모드 종료]
-// =========================================================================
+};
