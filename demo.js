@@ -183,3 +183,108 @@ viewCamera.onclick = () => {
 
 // 최초 실행
 setTimeout(nextWave, 1000);
+
+// =========================================================================
+// [디버그 모드 시작] - 스폰 포인트 관리 툴
+// =========================================================================
+
+const editorHTML = `
+<div id="zone-editor-ui" style="position:fixed; bottom:10px; left:10px; background:rgba(0,0,0,0.8); color:white; padding:15px; z-index:10000; font-family:monospace;">
+    <strong>[디버그 툴: 스폰 포인트 설정]</strong><br>
+    - 노란 원: FPV 드론 스폰 (드래그)<br>
+    - 주황 사각형: RPG 사수 스폰 (드래그)<br>
+    - 파란 원: 투사체 목표 지점 (드래그)<br><br>
+    <button id="btn-add-fpv" style="padding:5px 10px; cursor:pointer; background:#880; color:white; border:1px solid yellow;">+ FPV 스폰</button>
+    <button id="btn-add-rpg" style="padding:5px 10px; cursor:pointer; background:#840; color:white; border:1px solid orange;">+ RPG 스폰</button>
+    <button id="btn-solve" style="padding:5px 10px; cursor:pointer; background:#050; color:white; border:1px solid lime;">SOLVE (코드 생성)</button><br><br>
+    <textarea id="output-code" rows="12" cols="60" style="background:#222; color:lime; border:1px solid #555;"></textarea>
+</div>
+`;
+document.body.insertAdjacentHTML('beforeend', editorHTML);
+
+let dragTarget = null; 
+let nextFpvId = 3;
+let nextRpgId = 3;
+
+let targetPt = { id: 'TARGET', x: targetPixelX, y: targetPixelY, type: 'TARGET' };
+createHandle(targetPt);
+
+SPAWN_POINTS_FPV.forEach(pt => createHandle({...pt, type: 'FPV'}));
+SPAWN_POINTS_RPG.forEach(pt => createHandle({...pt, type: 'RPG'}));
+
+function createHandle(pt) {
+    let handle = document.createElement('div');
+    handle.style.cssText = `position:fixed; cursor:move; z-index:9999; transform:translate(-50%, -50%); border:2px solid black;`;
+    handle.style.left = pt.x + 'px';
+    handle.style.top = pt.y + 'px';
+    handle.title = pt.id;
+
+    if (pt.type === 'FPV') {
+        handle.style.width = '16px'; handle.style.height = '16px';
+        handle.style.background = 'yellow'; handle.style.borderRadius = '50%';
+    } else if (pt.type === 'RPG') {
+        handle.style.width = '16px'; handle.style.height = '16px';
+        handle.style.background = 'orange';
+    } else if (pt.type === 'TARGET') {
+        handle.style.width = '20px'; handle.style.height = '20px';
+        handle.style.background = 'blue'; handle.style.borderRadius = '50%';
+        handle.style.border = '2px solid white';
+    }
+
+    handle.addEventListener('mousedown', (e) => {
+        dragTarget = { point: pt, element: handle };
+    });
+    
+    document.body.appendChild(handle);
+}
+
+document.getElementById('btn-add-fpv').addEventListener('click', () => {
+    let newPt = { id: 'F' + (nextFpvId++), x: window.innerWidth / 2, y: window.innerHeight / 2, type: 'FPV' };
+    SPAWN_POINTS_FPV.push(newPt);
+    createHandle(newPt);
+});
+
+document.getElementById('btn-add-rpg').addEventListener('click', () => {
+    let newPt = { id: 'R' + (nextRpgId++), x: window.innerWidth / 2, y: window.innerHeight / 2, type: 'RPG' };
+    SPAWN_POINTS_RPG.push(newPt);
+    createHandle(newPt);
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (dragTarget) {
+        dragTarget.point.x = e.pageX;
+        dragTarget.point.y = e.pageY;
+        dragTarget.element.style.left = e.pageX + 'px';
+        dragTarget.element.style.top = e.pageY + 'px';
+
+        if (dragTarget.point.type === 'TARGET') {
+            targetPixelX = e.pageX;
+            targetPixelY = e.pageY;
+        }
+    }
+});
+
+document.addEventListener('mouseup', () => {
+    dragTarget = null;
+});
+
+document.getElementById('btn-solve').addEventListener('click', () => {
+    const output = document.getElementById('output-code');
+    
+    let code = `let targetPixelX = ${targetPixelX};\n`;
+    code += `let targetPixelY = ${targetPixelY};\n\n`;
+    
+    code += `const SPAWN_POINTS_FPV = [\n`;
+    SPAWN_POINTS_FPV.forEach(p => { code += `    { id: '${p.id}', x: ${p.x}, y: ${p.y} },\n`; });
+    code += `];\n\n`;
+
+    code += `const SPAWN_POINTS_RPG = [\n`;
+    SPAWN_POINTS_RPG.forEach(p => { code += `    { id: '${p.id}', x: ${p.x}, y: ${p.y} },\n`; });
+    code += `];\n`;
+
+    output.value = code;
+});
+
+// =========================================================================
+// [디버그 모드 종료]
+// =========================================================================
