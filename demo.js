@@ -3,32 +3,37 @@
 // =========================================
 
 // [교정] 목표 및 스폰 지점을 화면 대비 % 좌표로 관리합니다.
-let targetX_pc = 84.08; 
-let targetY_pc = 85.00; 
+let targetX_pc = 84.08;
+let targetY_pc = 85;
 
 const SPAWN_POINTS_FPV = [
-    { x_pc: 16.67, y_pc: 22.22 }, { x_pc: 66.67, y_pc: 22.22 }, { x_pc: 66.50, y_pc: 32.44 },
-    { x_pc: 98.17, y_pc: 33.04 }, { x_pc: 67.00, y_pc: 47.70 }, { x_pc: 82.92, y_pc: 45.93 },
-    { x_pc: 97.25, y_pc: 51.41 }, { x_pc: 74.08, y_pc: 47.26 }, { x_pc: 57.92, y_pc: 38.22 },
-    { x_pc: 90.58, y_pc: 61.19 }, { x_pc: 79.67, y_pc: 58.07 }, { x_pc: 90.92, y_pc: 44.59 }
+    { x_pc: 37.04, y_pc: 8.77 },
+    { x_pc: 66.67, y_pc: 22.22 },
+    { x_pc: 54.52, y_pc: 34.93 },
+    { x_pc: 88.63, y_pc: 6.09 },
+    { x_pc: 25.50, y_pc: 7.73 },
+    { x_pc: 82.92, y_pc: 45.93 },
+    { x_pc: 36.54, y_pc: 26.31 },
+    { x_pc: 74.08, y_pc: 47.26 },
+    { x_pc: 62.37, y_pc: 28.39 },
+    { x_pc: 43.98, y_pc: 20.81 },
+    { x_pc: 49.92, y_pc: 21.11 },
+    { x_pc: 65.22, y_pc: 8.77 },
 ];
 
 const SPAWN_POINTS_RPG = [
-    { x_pc: 12.50, y_pc: 88.89 }, { x_pc: 100.00, y_pc: 88.89 }, { x_pc: 75.33, y_pc: 82.07 },
-    { x_pc: 87.25, y_pc: 82.81 }, { x_pc: 51.42, y_pc: 88.30 }, { x_pc: 42.08, y_pc: 101.33 },
-    { x_pc: 103.08, y_pc: 89.78 }, { x_pc: 66.33, y_pc: 83.41 }, { x_pc: 95.58, y_pc: 81.63 },
-    { x_pc: 81.75, y_pc: 80.30 }, { x_pc: 74.83, y_pc: 77.93 }
+    { x_pc: 21.49, y_pc: 61.39 },
+    { x_pc: 67.73, y_pc: 58.12 },
+    { x_pc: 61.45, y_pc: 52.47 },
+    { x_pc: 52.17, y_pc: 59.01 },
+    { x_pc: 36.20, y_pc: 52.32 },
+    { x_pc: 42.08, y_pc: 101.33 },
+    { x_pc: 103.08, y_pc: 89.78 },
+    { x_pc: 48.58, y_pc: 50.69 },
+    { x_pc: 33.70, y_pc: 63.47 },
+    { x_pc: 87.63, y_pc: 58.27 },
+    { x_pc: 7.19, y_pc: 77.74 },
 ];
-
-const viewCamera = document.getElementById('camera-view');
-const logContent = document.getElementById('log-content');
-const turretBar = document.getElementById('turret-bar');
-const azimuthVal = document.getElementById('azimuth-val');
-const targetBox = document.getElementById('target-box');
-const rpgGunnerBox = document.getElementById('rpg-gunner-box');
-const rpgProjectileBox = document.getElementById('rpg-projectile-box');
-const cameraModeVal = document.getElementById('camera-mode-val');
-const hudStatusVal = document.getElementById('hud-status-val');
 
 const INTERCEPT_CHANCE = 0.82; 
 const MAX_SIZE = 20;
