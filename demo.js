@@ -1,38 +1,105 @@
 // =========================================
-// 1. 고정 데이터 및 시스템 설정
+// 1. [교정] 퍼센트 기반 좌표 데이터
 // =========================================
-let targetPixelX = 1009;
-let targetPixelY = 761;
+// 화면 왼쪽에서 몇 %, 위에서 몇 % 지점인지로 계산됨
+let targetX_pc = 84.08; // 목표 지점 X%
+let targetY_pc = 112.74; // 목표 지점 Y%
 
 const SPAWN_POINTS_FPV = [
-    { id: 'F1', x: 200, y: 150 }, { id: 'F2', x: 800, y: 150 }, { id: 'F3', x: 798, y: 219 },
-    { id: 'F4', x: 1178, y: 223 }, { id: 'F5', x: 804, y: 322 }, { id: 'F6', x: 995, y: 310 },
-    { id: 'F7', x: 1167, y: 347 }, { id: 'F8', x: 889, y: 319 }, { id: 'F9', x: 695, y: 258 },
-    { id: 'F10', x: 1087, y: 413 }, { id: 'F11', x: 956, y: 392 }, { id: 'F12', x: 1091, y: 301 }
+    { x_pc: 16.67, y_pc: 22.22 }, { x_pc: 66.67, y_pc: 22.22 }, { x_pc: 66.50, y_pc: 32.44 },
+    { x_pc: 98.17, y_pc: 33.04 }, { x_pc: 67.00, y_pc: 47.70 }, { x_pc: 82.92, y_pc: 45.93 },
+    { x_pc: 97.25, y_pc: 51.41 }, { x_pc: 74.08, y_pc: 47.26 }, { x_pc: 57.92, y_pc: 38.22 },
+    { x_pc: 90.58, y_pc: 61.19 }, { x_pc: 79.67, y_pc: 58.07 }, { x_pc: 90.92, y_pc: 44.59 }
 ];
 
 const SPAWN_POINTS_RPG = [
-    { id: 'R1', x: 150, y: 600 }, { id: 'R2', x: 1200, y: 600 }, { id: 'R3', x: 904, y: 554 },
-    { id: 'R4', x: 1047, y: 559 }, { id: 'R5', x: 617, y: 596 }, { id: 'R6', x: 505, y: 684 },
-    { id: 'R7', x: 1237, y: 606 }, { id: 'R8', x: 796, y: 563 }, { id: 'R9', x: 1147, y: 551 },
-    { id: 'R10', x: 981, y: 542 }, { id: 'R11', x: 898, y: 526 }
+    { x_pc: 12.50, y_pc: 88.89 }, { x_pc: 100.00, y_pc: 88.89 }, { x_pc: 75.33, y_pc: 82.07 },
+    { x_pc: 87.25, y_pc: 82.81 }, { x_pc: 51.42, y_pc: 88.30 }, { x_pc: 42.08, y_pc: 101.33 },
+    { x_pc: 103.08, y_pc: 89.78 }, { x_pc: 66.33, y_pc: 83.41 }, { x_pc: 95.58, y_pc: 81.63 },
+    { x_pc: 81.75, y_pc: 80.30 }, { x_pc: 74.83, y_pc: 77.93 }
 ];
 
-// DOM 참조 (HTML 구조에 맞춰 전역 선언)
-const viewCamera = document.getElementById('camera-view');
-const viewLog = document.getElementById('log-view');
-const logContent = document.getElementById('log-content');
-const turretBar = document.getElementById('turret-bar');
-const azimuthVal = document.getElementById('azimuth-val');
-const targetBox = document.getElementById('target-box');
-const rpgGunnerBox = document.getElementById('rpg-gunner-box');
-const rpgProjectileBox = document.getElementById('rpg-projectile-box');
-const cameraModeVal = document.getElementById('camera-mode-val');
-const hudStatusVal = document.getElementById('hud-status-val');
+// =========================================
+// 2. [교정] 정밀 스폰 및 이동 엔진
+// =========================================
 
-const INTERCEPT_CHANCE = 0.82; 
-const MAX_SIZE = 20;
+function launchProjectile(box, startX_pc, startY_pc, speed, baseSize, willIntercept, interceptAt, logRes) {
+    let timeTick = 0;
 
+    // 시작 시점에 위치를 즉시 할당 (이전 위치 잔상 제거)
+    box.style.left = startX_pc + '%';
+    box.style.top = startY_pc + '%';
+    box.style.display = 'block';
+    box.style.transform = 'translate(-50%, -50%)'; 
+
+    const moveLoop = setInterval(() => {
+        timeTick += speed;
+        if (timeTick > 1) timeTick = 1;
+
+        // 모든 계산은 % 단위로 진행되어 화면 크기에 영향을 받지 않음
+        const curX = startX_pc + (targetX_pc - startX_pc) * timeTick;
+        const curY = startY_pc + (targetY_pc - startY_pc) * timeTick;
+        const curSize = baseSize + (20 - baseSize) * Math.pow(timeTick, 1.5);
+
+        box.style.left = curX + '%';
+        box.style.top = curY + '%';
+        box.style.width = curSize + '%';
+
+        if (willIntercept && timeTick >= interceptAt) {
+            clearInterval(moveLoop);
+            box.style.display = 'none';
+            
+            // 폭발 이펙트 위치를 %에서 px로 변환하여 생성
+            const viewRect = viewCamera.getBoundingClientRect();
+            const expX = (curX / 100) * viewRect.width;
+            const expY = (curY / 100) * viewRect.height;
+            createExplosion(expX, expY);
+            
+            logRes.innerHTML = `<span class="log-success">NEUTRALIZED.</span>`;
+            setTimeout(nextWave, 1500);
+            return;
+        }
+
+        if (timeTick >= 1) {
+            clearInterval(moveLoop);
+            box.style.display = 'none';
+            logRes.innerHTML = `<span class="log-alert">IMPACT!</span>`;
+            setTimeout(nextWave, 1500);
+        }
+    }, 30);
+}
+
+function startAttack(type) {
+    const isFPV = type === 'FPV';
+    const points = isFPV ? SPAWN_POINTS_FPV : SPAWN_POINTS_RPG;
+    const spawn = points[Math.floor(Math.random() * points.length)];
+    const box = isFPV ? targetBox : rpgProjectileBox;
+    
+    const startX = spawn.x_pc;
+    const startY = spawn.y_pc;
+    const willIntercept = Math.random() <= INTERCEPT_CHANCE;
+    const interceptAt = 0.5 + (Math.random() * 0.1);
+
+    const logRes = updateHUD(isFPV ? 'FPV DRONE' : 'RPG-7', startX, startY);
+
+    if (!isFPV) {
+        // 사수도 % 좌표로 배치
+        rpgGunnerBox.style.display = 'block';
+        rpgGunnerBox.style.left = startX + '%';
+        rpgGunnerBox.style.top = startY + '%';
+        rpgGunnerBox.className = 'rpg-gunner-box fade-left';
+        void rpgGunnerBox.offsetWidth;
+        rpgGunnerBox.classList.replace('fade-left', 'fade-center');
+        
+        setTimeout(() => launchProjectile(box, startX, startY, 0.035, 5, willIntercept, interceptAt, logRes), 600);
+        setTimeout(() => {
+            rpgGunnerBox.classList.replace('fade-center', 'fade-right');
+            setTimeout(() => { rpgGunnerBox.style.display = 'none'; }, 500);
+        }, 2000);
+    } else {
+        launchProjectile(box, startX, startY, 0.008, 0, willIntercept, interceptAt, logRes);
+    }
+}
 // =========================================
 // 2. 핵심 시뮬레이션 엔진
 // =========================================
