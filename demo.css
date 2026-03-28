@@ -155,24 +155,3 @@ body { background-color: #000; color: #0f0; font-family: monospace; }
     transform: translate(-50%, -50%) scale(2.5);
     opacity: 0;
 }
-
-/* 경로 가이드라인 스타일 */
-.trajectory-line {
-    stroke: rgba(255, 0, 0, 0.5);
-    stroke-width: 2;
-    stroke-dasharray: 5, 5;
-    pointer-events: none;
-}
-
-/* 조절 핸들 */
-.path-node {
-    position: absolute;
-    width: 14px;
-    height: 14px;
-    border: 2px solid #fff;
-    cursor: move;
-    z-index: 10001;
-    transform: translate(-50%, -50%);
-}
-.node-start { background: #0f0; } /* 시작점: 녹색 */
-.node-end { background: #f00; }   /* 끝점: 적색 */
