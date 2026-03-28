@@ -1,179 +1,111 @@
 // =========================================
-// 1. 시스템 설정 및 추출된 퍼센트(%) 데이터
+// 1. 시나리오 데이터 (디버그 툴에서 추출할 데이터)
 // =========================================
-let targetX_pc = 84.08;
-let targetY_pc = 85;
 
-const SPAWN_POINTS_FPV = [
-    { x_pc: 37.04, y_pc: 8.77 }, { x_pc: 66.67, y_pc: 22.22 }, { x_pc: 54.52, y_pc: 34.93 },
-    { x_pc: 88.63, y_pc: 6.09 }, { x_pc: 25.50, y_pc: 7.73 }, { x_pc: 82.92, y_pc: 45.93 },
-    { x_pc: 36.54, y_pc: 26.31 }, { x_pc: 74.08, y_pc: 47.26 }, { x_pc: 62.37, y_pc: 28.39 },
-    { x_pc: 43.98, y_pc: 20.81 }, { x_pc: 49.92, y_pc: 21.11 }, { x_pc: 65.22, y_pc: 8.77 }
+// 시나리오 예시: { type, start: {x, y}, end: {x, y}, initSize }
+const ATTACK_SCENARIOS = [
+    { type: 'FPV', start: {x: 15, y: 10}, end: {x: 84, y: 85}, initSize: 0.5 },
+    { type: 'RPG', start: {x: 85, y: 45}, end: {x: 84, y: 85}, initSize: 4.0 }
 ];
 
-const SPAWN_POINTS_RPG = [
-    { x_pc: 21.49, y_pc: 61.39 }, { x_pc: 67.73, y_pc: 58.12 }, { x_pc: 61.45, y_pc: 52.47 },
-    { x_pc: 52.17, y_pc: 59.01 }, { x_pc: 36.20, y_pc: 52.32 }, { x_pc: 42.08, y_pc: 101.33 },
-    { x_pc: 103.08, y_pc: 89.78 }, { x_pc: 48.58, y_pc: 50.69 }, { x_pc: 33.70, y_pc: 63.47 },
-    { x_pc: 87.63, y_pc: 58.27 }, { x_pc: 7.19, y_pc: 77.74 }
-];
-
-// DOM 참조
 const viewCamera = document.getElementById('camera-view');
-const logContent = document.getElementById('log-content');
-const turretBar = document.getElementById('turret-bar');
-const azimuthVal = document.getElementById('azimuth-val');
 const targetBox = document.getElementById('target-box');
 const rpgGunnerBox = document.getElementById('rpg-gunner-box');
 const rpgProjectileBox = document.getElementById('rpg-projectile-box');
-const cameraModeVal = document.getElementById('camera-mode-val');
-const hudStatusVal = document.getElementById('hud-status-val');
-
-const INTERCEPT_CHANCE = 0.82; 
-const MAX_SIZE = 20;
 
 // =========================================
-// 2. 핵심 유틸리티 (이펙트 및 HUD)
+// 2. 핵심 유틸리티 및 시뮬레이션 엔진
 // =========================================
 
 function createExplosion(x_pc, y_pc) {
     const exp = document.createElement('div');
     exp.className = 'explosion-effect';
-    // 퍼센트 좌표를 그대로 사용하여 반응형 유지
     exp.style.left = `${x_pc}%`;
     exp.style.top = `${y_pc}%`;
     viewCamera.appendChild(exp);
-
     void exp.offsetWidth; 
     exp.classList.add('fade');
     setTimeout(() => exp.remove(), 400);
 }
 
-function updateHUD(name, startX_pc, startY_pc) {
-    const now = new Date();
-    const time = now.toTimeString().split(' ')[0];
-    
-    // % 좌표 기반 방위각 계산
-    const dx = startX_pc - targetX_pc;
-    const dy = startY_pc - targetY_pc;
-    let angle = Math.round(Math.atan2(dy, dx) * (180 / Math.PI)) + 90;
-    if (angle < 0) angle += 360;
-    const dist = Math.round(Math.sqrt(dx * dx + dy * dy) * 5.5);
-
-    turretBar.style.transform = `translate(-50%, -100%) rotate(${angle}deg)`;
-    azimuthVal.innerText = angle;
-
-    const entry = document.createElement('div');
-    entry.className = 'log-entry';
-    entry.innerHTML = `
-        <span class="log-time">[${time}]</span>
-        <span class="log-alert">WARNING: ${name} DETECTED.</span><br>
-        <span>AZIMUTH: ${angle}° | DISTANCE: ${dist}m</span><br>
-        <span>STATUS: <span class="res" style="color: #ff0;">INTERCEPTING...</span></span>
-    `;
-    logContent.prepend(entry);
-    return entry.querySelector('.res');
-}
-
-// =========================================
-// 3. 전투 시뮬레이션 엔진
-// =========================================
-
-function startAttack(type) {
-    const isFPV = type === 'FPV';
-    const points = isFPV ? SPAWN_POINTS_FPV : SPAWN_POINTS_RPG;
-    const spawn = points[Math.floor(Math.random() * points.length)];
+function executeAttack(scenario) {
+    const isFPV = scenario.type === 'FPV';
     const box = isFPV ? targetBox : rpgProjectileBox;
+    const { start, end, initSize } = scenario;
     
-    const startX = spawn.x_pc;
-    const startY = spawn.y_pc;
-    const willIntercept = Math.random() <= INTERCEPT_CHANCE;
-    const interceptAt = 0.5 + (Math.random() * 0.1); 
+    let t = 0; // 진행도 (0 ~ 1)
+    const interceptAt = 0.5 + (Math.random() * 0.15); // 50~65% 지점 요격
+    const willIntercept = Math.random() <= 0.82;
 
-    const logRes = updateHUD(isFPV ? 'FPV DRONE' : 'RPG WARHEAD', startX, startY);
+    const logRes = updateHUD(scenario.type, start.x, start.y, end.x, end.y);
 
-    if (!isFPV) {
-        // RPG 사수(Terror) 배치
+    if (scenario.type === 'RPG') {
+        // 사수 배치 및 등장
         rpgGunnerBox.style.display = 'block';
-        rpgGunnerBox.style.left = `${startX}%`;
-        rpgGunnerBox.style.top = `${startY}%`;
-        rpgGunnerBox.className = 'rpg-gunner-box fade-left';
-        void rpgGunnerBox.offsetWidth;
-        rpgGunnerBox.classList.replace('fade-left', 'fade-center');
+        rpgGunnerBox.style.left = `${start.x}%`;
+        rpgGunnerBox.style.top = `${start.y}%`;
+        rpgGunnerBox.className = 'rpg-gunner-box fade-center';
         
-        setTimeout(() => launch(box, startX, startY, 0.035, 5, willIntercept, interceptAt, logRes), 600);
-        setTimeout(() => {
-            rpgGunnerBox.classList.replace('fade-center', 'fade-right');
-            setTimeout(() => { rpgGunnerBox.style.display = 'none'; }, 500);
-        }, 2000);
+        setTimeout(() => launch(), 800);
+        setTimeout(() => { rpgGunnerBox.style.display = 'none'; }, 2500);
     } else {
-        launch(box, startX, startY, 0.008, 0, willIntercept, interceptAt, logRes);
+        launch();
+    }
+
+    function launch() {
+        box.style.display = 'block';
+        const loop = setInterval(() => {
+            t += isFPV ? 0.007 : 0.03;
+            if (t > 1) t = 1;
+
+            // 선형 보간(Lerp) 경로 계산
+            // $P(t) = P_{start} + t \times (P_{end} - P_{start})$
+            const curX = start.x + (end.x - start.x) * t;
+            const curY = start.y + (end.y - start.y) * t;
+            const curSize = initSize + (20 - initSize) * Math.pow(t, 1.5);
+
+            box.style.left = `${curX}%`;
+            box.style.top = `${curY}%`;
+            box.style.width = `${curSize}%`;
+
+            // 진행도(t) 기반 APS 요격 판정
+            if (willIntercept && t >= interceptAt) {
+                clearInterval(loop);
+                box.style.display = 'none';
+                createExplosion(curX, curY);
+                logRes.innerHTML = `<span class="log-success">INTERCEPTED AT ${(t*100).toFixed(0)}%</span>`;
+                setTimeout(nextScenario, 1500);
+                return;
+            }
+
+            if (t >= 1) {
+                clearInterval(loop);
+                box.style.display = 'none';
+                logRes.innerHTML = `<span class="log-alert">IMPACT</span>`;
+                setTimeout(nextScenario, 1500);
+            }
+        }, 30);
     }
 }
 
-function launch(box, startX, startY, speed, baseSize, willIntercept, interceptAt, logRes) {
-    let timeTick = 0;
-    box.style.display = 'block';
-    box.style.transform = 'translate(-50%, -50%)';
+// =========================================
+// 3. 진화된 디버그 툴 (Path & Size Editor)
+// =========================================
 
-    const loop = setInterval(() => {
-        timeTick += speed;
-        if (timeTick > 1) timeTick = 1;
+const editorHTML = `
+<div id="path-editor-ui" style="position:fixed; top:10px; right:10px; background:rgba(0,0,0,0.9); color:white; padding:15px; z-index:10000; font-family:monospace; border:1px solid #ff0000;">
+    <strong style="color:red;">[APS 경로 시나리오 에디터]</strong><br><br>
+    유형: <select id="edit-type"><option value="FPV">FPV</option><option value="RPG">RPG</option></select><br>
+    초기 크기: <input type="range" id="edit-size" min="0.1" max="10" step="0.1" value="1"><br>
+    <button id="btn-preview" style="background:#444; color:white;">미리보기</button>
+    <button id="btn-save-path" style="background:red; color:white;">시나리오 저장</button><br><br>
+    <textarea id="path-output" rows="8" cols="40" style="font-size:10px; background:#111; color:lime;"></textarea>
+</div>
+<svg id="path-svg" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9000;">
+    <line id="preview-line" x1="0" y1="0" x2="0" y2="0" stroke="red" stroke-width="2" stroke-dasharray="5,5" />
+</svg>
+`;
 
-        const curX = startX + (targetX_pc - startX) * timeTick;
-        const curY = startY + (targetY_pc - startY) * timeTick;
-        const curSize = baseSize + (MAX_SIZE - baseSize) * Math.pow(timeTick, 1.5);
+document.body.insertAdjacentHTML('beforeend', editorHTML);
 
-        box.style.left = `${curX}%`;
-        box.style.top = `${curY}%`;
-        box.style.width = `${curSize}%`;
-
-        if (willIntercept && timeTick >= interceptAt) {
-            clearInterval(loop);
-            box.style.display = 'none';
-            createExplosion(curX, curY);
-            logRes.innerHTML = `<span class="log-success">NEUTRALIZED.</span>`;
-            setTimeout(nextWave, 1500);
-            return;
-        }
-
-        if (timeTick >= 1) {
-            clearInterval(loop);
-            box.style.display = 'none';
-            logRes.innerHTML = `<span class="log-alert">IMPACT!</span>`;
-            setTimeout(nextWave, 1500);
-        }
-    }, 30);
-}
-
-function nextWave() {
-    startAttack(Math.random() > 0.5 ? 'FPV' : 'RPG');
-}
-
-// UI 이벤트
-document.getElementById('btn-camera').onclick = () => {
-    viewCamera.classList.add('active'); 
-    document.getElementById('log-view').classList.remove('active');
-    document.getElementById('btn-camera').classList.add('active');
-    document.getElementById('btn-log').classList.remove('active');
-};
-document.getElementById('btn-log').onclick = () => {
-    document.getElementById('log-view').classList.add('active');
-    viewCamera.classList.remove('active');
-    document.getElementById('btn-log').classList.add('active');
-    document.getElementById('btn-camera').classList.remove('active');
-};
-
-setInterval(() => {
-    document.getElementById('hud-time-display').innerText = new Date().toTimeString().split(' ')[0];
-}, 1000);
-
-viewCamera.onclick = () => {
-    const isOptical = cameraModeVal.innerText === 'OPTICAL';
-    cameraModeVal.innerText = isOptical ? 'IR' : 'OPTICAL';
-    hudStatusVal.innerText = `${isOptical ? 'IR' : 'OPTICAL'} SENSOR: ONLINE`;
-    viewCamera.classList.toggle('ir-mode');
-};
-
-// 시작
-setTimeout(nextWave, 1000);
+// 디버그용 핸들 (시작점/끝점) 제어 로직 추가 필요...
