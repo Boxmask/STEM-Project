@@ -1,20 +1,43 @@
 // =========================================
-// 1. 시나리오 데이터 (디버그 툴에서 추출할 데이터)
+// 1. 고정 데이터 및 시스템 설정 (퍼센트% 기반으로 교정)
 // =========================================
 
-// 시나리오 예시: { type, start: {x, y}, end: {x, y}, initSize }
-const ATTACK_SCENARIOS = [
-    { type: 'FPV', start: {x: 15, y: 10}, end: {x: 84, y: 85}, initSize: 0.5 },
-    { type: 'RPG', start: {x: 85, y: 45}, end: {x: 84, y: 85}, initSize: 4.0 }
+// 목표 지점은 화면 대비 % 좌표로 관리합니다.
+let targetX_pc = 84.08; 
+let targetY_pc = 85.00; 
+
+// FPV와 RPG의 스폰 포인트 데이터를 %로 관리합니다.
+const SPAWN_POINTS_FPV = [
+    { id: 'F1', x_pc: 16.67, y_pc: 22.22 }, { id: 'F2', x: 800, y: 150 }, { id: 'F3', x: 798, y: 219 },
+    { id: 'F4', x: 1178, y: 223 }, { id: 'F5', x: 804, y: 322 }, { id: 'F6', x: 995, y: 310 },
+    { id: 'F7', x: 1167, y: 347 }, { id: 'F8', x: 889, y: 319 }, { id: 'F9', x: 695, y: 258 },
+    { id: 'F10', x: 1087, y: 413 }, { id: 'F11', x: 956, y: 392 }, { id: 'F12', x: 1091, y: 301 }
 ];
 
+const SPAWN_POINTS_RPG = [
+    { id: 'R1', x_pc: 12.50, y_pc: 88.89 }, { id: 'R2', x: 1200, y: 600 }, { id: 'R3', x: 904, y: 554 },
+    { id: 'R4', x: 1047, y: 559 }, { id: 'R5', x: 617, y: 596 }, { id: 'R6', x: 505, y: 684 },
+    { id: 'R7', x: 1237, y: 606 }, { id: 'R8', x: 796, y: 563 }, { id: 'R9', x: 1147, y: 551 },
+    { id: 'R10', x: 981, y: 542 }, { id: 'R11', x: 898, y: 526 }
+];
+
+// DOM 참조 (HTML 구조에 맞춰 전역 선언)
 const viewCamera = document.getElementById('camera-view');
+const viewLog = document.getElementById('log-view');
+const logContent = document.getElementById('log-content');
+const turretBar = document.getElementById('turret-bar');
+const azimuthVal = document.getElementById('azimuth-val');
 const targetBox = document.getElementById('target-box');
 const rpgGunnerBox = document.getElementById('rpg-gunner-box');
 const rpgProjectileBox = document.getElementById('rpg-projectile-box');
+const cameraModeVal = document.getElementById('camera-mode-val');
+const hudStatusVal = document.getElementById('hud-status-val');
+
+const INTERCEPT_CHANCE = 0.82; 
+const MAX_SIZE = 20;
 
 // =========================================
-// 2. 핵심 유틸리티 및 시뮬레이션 엔진
+// 2. 핵심 시뮬레이션 엔진
 // =========================================
 
 function createExplosion(x_pc, y_pc) {
@@ -28,101 +51,151 @@ function createExplosion(x_pc, y_pc) {
     setTimeout(() => exp.remove(), 400);
 }
 
-function executeAttack(scenario) {
-    const isFPV = scenario.type === 'FPV';
-    const box = isFPV ? targetBox : rpgProjectileBox;
-    const { start, end, initSize } = scenario;
+function updateHUD(name, startX_pc, startY_pc) {
+    const now = new Date();
+    const time = now.toTimeString().split(' ')[0];
+    const dx = startX_pc - targetX_pc;
+    const dy = startY_pc - targetY_pc;
     
-    let t = 0; // 진행도 (0 ~ 1)
-    const interceptAt = 0.5 + (Math.random() * 0.15); // 50~65% 지점 요격
-    const willIntercept = Math.random() <= 0.82;
+    // 방위각 계산 보정
+    let angle = Math.round(Math.atan2(dy, dx) * (180 / Math.PI)) + 90;
+    if (angle < 0) angle += 360;
+    const dist = Math.round(Math.sqrt(dx * dx + dy * dy) * 5.5);
 
-    const logRes = updateHUD(scenario.type, start.x, start.y, end.x, end.y);
+    turretBar.style.transform = `translate(-50%, -100%) rotate(${angle}deg)`;
+    azimuthVal.innerText = angle;
 
-    if (scenario.type === 'RPG') {
-        // 사수 배치 및 등장
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-alert">${name} DETECTED.</span><br>
+                       <span>AZIMUTH: ${angle}° | DIST: ${dist}m</span> <span class="res">...</span>`;
+    logContent.prepend(entry);
+    return entry.querySelector('.res');
+}
+
+function startAttack(type) {
+    const isFPV = type === 'FPV';
+    const points = isFPV ? SPAWN_POINTS_FPV : SPAWN_POINTS_RPG;
+    const spawn = points[Math.floor(Math.random() * points.length)];
+    const box = isFPV ? targetBox : rpgProjectileBox;
+    
+    const startX = spawn.x_pc;
+    const startY = spawn.y_pc;
+    const willIntercept = Math.random() <= INTERCEPT_CHANCE;
+    const interceptAt = 0.5 + (Math.random() * 0.1); 
+
+    const logRes = updateHUD(isFPV ? 'FPV DRONE' : 'RPG WARHEAD', startX, startY);
+
+    if (!isFPV) {
         rpgGunnerBox.style.display = 'block';
-        rpgGunnerBox.style.left = `${start.x}%`;
-        rpgGunnerBox.style.top = `${start.y}%`;
-        rpgGunnerBox.className = 'rpg-gunner-box fade-center';
+        rpgGunnerBox.style.left = `${startX}%`;
+        rpgGunnerBox.style.top = `${startY}%`;
+        rpgGunnerBox.className = 'rpg-gunner-box fade-left';
+        void rpgGunnerBox.offsetWidth;
+        rpgGunnerBox.classList.replace('fade-left', 'fade-center');
         
-        setTimeout(() => launch(), 800);
-        setTimeout(() => { rpgGunnerBox.style.display = 'none'; }, 2500);
+        setTimeout(() => launchProjectile(box, startX, startY, 0.035, 5, willIntercept, interceptAt, logRes), 600);
+        setTimeout(() => {
+            rpgGunnerBox.classList.replace('fade-center', 'fade-right');
+            setTimeout(() => { rpgGunnerBox.style.display = 'none'; }, 500);
+        }, 2000);
     } else {
-        launch();
-    }
-
-    function launch() {
-        box.style.display = 'block';
-        const loop = setInterval(() => {
-            t += isFPV ? 0.007 : 0.03;
-            if (t > 1) t = 1;
-
-            // 선형 보간(Lerp) 경로 계산
-            // $P(t) = P_{start} + t \times (P_{end} - P_{start})$
-            const curX = start.x + (end.x - start.x) * t;
-            const curY = start.y + (end.y - start.y) * t;
-            const curSize = initSize + (20 - initSize) * Math.pow(t, 1.5);
-
-            box.style.left = `${curX}%`;
-            box.style.top = `${curY}%`;
-            box.style.width = `${curSize}%`;
-
-            // 진행도(t) 기반 APS 요격 판정
-            if (willIntercept && t >= interceptAt) {
-                clearInterval(loop);
-                box.style.display = 'none';
-                createExplosion(curX, curY);
-                logRes.innerHTML = `<span class="log-success">INTERCEPTED AT ${(t*100).toFixed(0)}%</span>`;
-                setTimeout(nextScenario, 1500);
-                return;
-            }
-
-            if (t >= 1) {
-                clearInterval(loop);
-                box.style.display = 'none';
-                logRes.innerHTML = `<span class="log-alert">IMPACT</span>`;
-                setTimeout(nextScenario, 1500);
-            }
-        }, 30);
+        launchProjectile(box, startX, startY, 0.008, 0, willIntercept, interceptAt, logRes);
     }
 }
 
-// =========================================
-// [통합 단계] 시나리오 디렉터: 경로, 크기, 궤적 통합 에디터
-// =========================================
+function launchProjectile(box, startX_pc, startY_pc, speed, baseSize, willIntercept, interceptAt, logRes) {
+    let timeTick = 0;
+    box.style.left = startX_pc + '%';
+    box.style.top = startY_pc + '%';
+    box.style.width = baseSize + '%';
+    box.style.display = 'block';
+    box.style.transform = 'translate(-50%, -50%)'; 
 
-// 1. SVG 레이어 및 에디터 UI 삽입
-if (!document.getElementById('path-svg')) {
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.id = "path-svg";
-    svg.style.cssText = "position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9000;";
-    document.getElementById('camera-view').appendChild(svg);
+    const moveLoop = setInterval(() => {
+        timeTick += speed;
+        if (timeTick > 1) timeTick = 1;
+
+        const curX = startX_pc + (targetX_pc - startX_pc) * timeTick;
+        const curY = startY_pc + (targetY_pc - startY_pc) * timeTick;
+        const curSize = baseSize + (MAX_SIZE - baseSize) * Math.pow(timeTick, 1.5);
+
+        box.style.width = curSize + '%';
+        box.style.left = curX + '%';
+        box.style.top = curY + '%';
+
+        if (willIntercept && timeTick >= interceptAt) {
+            clearInterval(moveLoop);
+            box.style.display = 'none';
+            createExplosion(curX, curY);
+            logRes.innerHTML = `<span class="log-success">NEUTRALIZED.</span>`;
+            setTimeout(nextWave, 1500);
+            return;
+        }
+
+        if (timeTick >= 1) {
+            clearInterval(moveLoop);
+            box.style.display = 'none';
+            logRes.innerHTML = `<span class="log-alert">IMPACT! BRACE!</span>`;
+            setTimeout(nextWave, 1500);
+        }
+    }, 30);
 }
+
+function nextWave() {
+    startAttack(Math.random() > 0.5 ? 'FPV' : 'RPG');
+}
+
+// UI 이벤트 리스너
+document.getElementById('btn-camera').onclick = () => {
+    viewCamera.classList.add('active'); viewLog.classList.remove('active');
+    document.getElementById('btn-camera').classList.add('active');
+    document.getElementById('btn-log').classList.remove('active');
+};
+document.getElementById('btn-log').onclick = () => {
+    viewLog.classList.add('active'); viewCamera.classList.remove('active');
+    document.getElementById('btn-log').classList.add('active');
+    document.getElementById('btn-camera').classList.add('active');
+};
+
+setInterval(() => {
+    document.getElementById('hud-time-display').innerText = new Date().toTimeString().split(' ')[0];
+}, 1000);
+
+viewCamera.onclick = () => {
+    const isOptical = cameraModeVal.innerText === 'OPTICAL';
+    cameraModeVal.innerText = isOptical ? 'IR' : 'OPTICAL';
+    hudStatusVal.innerText = `${isOptical ? 'IR' : 'OPTICAL'} SENSOR: ONLINE`;
+    viewCamera.classList.toggle('ir-mode');
+};
+
+// 최초 실행
+setTimeout(nextWave, 1000);
+
+// =========================================================================
+// [디버그 모드 시작] - 반응형(%) 스폰 포인트 관리 툴
+// =========================================================================
 
 const editorHTML = `
-<div id="scenario-director" style="position:fixed; bottom:10px; right:10px; background:rgba(0,0,0,0.95); color:white; padding:15px; z-index:10000; font-family:monospace; width:350px; border:2px solid cyan; border-radius:8px; box-shadow: 0 0 20px rgba(0,255,255,0.2);">
-    <strong style="color:cyan; font-size:14px;">[COMBAT SCENARIO DIRECTOR]</strong><br>
-    <small style="color:#888;">경로를 설계하고 ▶ 버튼으로 테스트하세요.</small><br><br>
+<div id="path-editor" style="position:fixed; bottom:10px; right:10px; background:rgba(0,0,0,0.9); color:white; padding:15px; z-index:10000; font-family:monospace; width:340px; border:1px solid cyan;">
+    <strong>[COMBAT SCENARIO DIRECTOR]</strong><br>
+    - 실제 이미지를 움직여 경로를 설계하세요.<br><br>
     
-    <div id="path-list" style="max-height:300px; overflow-y:auto; margin-bottom:15px; padding-right:5px;"></div>
+    <div id="path-list" style="max-height:300px; overflow-y:auto; margin-bottom:10px; padding-right:5px;"></div>
     
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-        <button id="add-fpv-path" style="background:#880; color:white; border:none; padding:10px; cursor:pointer; font-weight:bold;">+ FPV 경로</button>
-        <button id="add-rpg-path" style="background:#840; color:white; border:none; padding:10px; cursor:pointer; font-weight:bold;">+ RPG 경로</button>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+        <button id="add-fpv-path" style="background:#880; color:white; border:none; padding:8px; cursor:pointer;">+ FPV 경로</button>
+        <button id="add-rpg-path" style="background:#840; color:white; border:none; padding:8px; cursor:pointer;">+ RPG 경로</button>
     </div>
-    <button id="export-data" style="background:cyan; color:black; font-weight:bold; margin-top:10px; width:100%; border:none; padding:10px; cursor:pointer;">최종 시나리오 추출 (SOLVE)</button>
+    <button id="solve-new" style="background:cyan; color:black; font-weight:bold; margin-top:10px; width:100%; border:none; padding:8px; cursor:pointer;">좌표 데이터 추출 (SOLVE)</button>
 </div>
+<svg id="path-svg" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9000;"></svg>
 `;
-
-if (document.getElementById('scenario-director')) document.getElementById('scenario-director').remove();
 document.body.insertAdjacentHTML('beforeend', editorHTML);
 
 let scenarios = []; 
-const cameraView = document.getElementById('camera-view');
 const pathSvg = document.getElementById('path-svg');
 
-// 시나리오 추가 함수
 function addScenario(type) {
     const id = type + "_" + (scenarios.length + 1);
     const newScenario = {
@@ -135,32 +208,33 @@ function addScenario(type) {
     refreshEditor();
 }
 
-// 에디터 화면 갱신 (리스트, 선, 핸들)
 function refreshEditor() {
-    const list = document.getElementById('path-list');
+    const list = document.getElementById('object-list') || document.getElementById('path-list');
     list.innerHTML = '';
     pathSvg.innerHTML = '';
     
-    // 기존 핸들 제거
-    document.querySelectorAll('.dir-handle').forEach(h => h.remove());
+    // 기존 미리보기 이미지 및 핸들 제거
+    document.querySelectorAll('.scenario-preview, .path-handle').forEach(el => el.remove());
 
     scenarios.forEach((s, idx) => {
-        // 1. UI 리스트 아이템
+        // UI 리스트 아이템
         const item = document.createElement('div');
-        item.style.cssText = "background:#222; padding:12px; margin-bottom:8px; border-radius:4px; border-left:4px solid " + (s.type === 'FPV' ? 'yellow' : 'orange');
+        item.style.cssText = "background:#222; padding:10px; margin-bottom:8px; border-radius:4px; border-left:4px solid cyan;";
         item.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <b style="color:cyan;">${s.id}</b>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                <span style="color:cyan; font-weight:bold;">${s.id}</span>
                 <button onclick="testScenario(${idx})" style="background:#050; color:lime; border:1px solid lime; cursor:pointer; padding:2px 8px;">▶ TEST</button>
             </div>
-            <div style="font-size:11px; display:grid; gap:5px;">
-                <label>Start Size: <input type="range" min="1" max="30" value="${s.startSize}" oninput="updateScenarioData(${idx}, 'startSize', this.value)"> ${s.startSize}%</label>
-                <label>End Size: <input type="range" min="5" max="60" value="${s.endSize}" oninput="updateScenarioData(${idx}, 'endSize', this.value)"> ${s.endSize}%</label>
+            <div style="font-size:11px;">
+                <label>Start Size: </label>
+                <input type="range" min="1" max="30" value="${s.startSize}" oninput="updateScenarioData(${idx}, 'startSize', this.value)"> ${s.startSize}%<br>
+                <label>End Size: </label>
+                <input type="range" min="5" max="50" value="${s.endSize}" oninput="updateScenarioData(${idx}, 'endSize', this.value)"> ${s.endSize}%
             </div>
         `;
         list.appendChild(item);
 
-        // 2. SVG 궤적 선
+        // 시각적 가이드라인 (SVG)
         const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
         line.setAttribute("x1", s.startX + "%"); line.setAttribute("y1", s.startY + "%");
         line.setAttribute("x2", s.endX + "%");   line.setAttribute("y2", s.endY + "%");
@@ -169,28 +243,40 @@ function refreshEditor() {
         line.setAttribute("stroke-dasharray", "4,4");
         pathSvg.appendChild(line);
 
-        // 3. 드래그 핸들 (시작:초록, 끝:파랑)
-        createHandle(s, idx, 'start');
-        createHandle(s, idx, 'end');
+        // 실제 이미지로 핸들 생성
+        createImageHandle(s, idx, 'start');
+        createImageHandle(s, idx, 'end');
     });
 }
 
-function createHandle(s, idx, mode) {
-    const handle = document.createElement('div');
-    handle.className = 'dir-handle';
+// [교정] 점이 아니라 실제 이미지를 사용하여 드래그 핸들을 만듭니다.
+function createImageHandle(s, idx, mode) {
     const isStart = mode === 'start';
+    const handle = document.createElement('div');
+    handle.className = 'scenario-preview path-handle';
+    handle.id = `preview_${s.id}_${mode}`;
+    
+    // 객체 타입에 따른 이미지 경로 설정
+    const imgPath = s.type === 'FPV' ? 'FPV.png' : 'terror.png';
+    // 시작점 이미지에만 크기 조절 슬라이더 값을 반영
+    const size = isStart ? s.startSize : 3; 
+
     handle.style.cssText = `
-        position:absolute; width:14px; height:14px; 
-        background:${isStart ? '#0f0' : '#00f'}; 
-        left:${isStart ? s.startX : s.endX}%; 
+        position:absolute; left:${isStart ? s.startX : s.endX}%; 
         top:${isStart ? s.startY : s.endY}%; 
-        transform:translate(-50%, -50%); border:2px solid white; border-radius:50%; z-index:9999; cursor:move;
+        width:${size}%; transform:translate(-50%, -50%); 
+        border:${isStart ? '3px solid #0f0' : '3px solid #00f'}; 
+        border-radius:2px; z-index:9999; cursor:move; 
+        box-sizing:border-box;
     `;
+    
+    handle.innerHTML = `<img src="${imgPath}" style="width:100%; opacity:${isStart ? 0.7 : 0.4}; pointer-events:none;">`;
 
     handle.onmousedown = (e) => {
         e.preventDefault();
+        e.stopPropagation();
         document.onmousemove = (me) => {
-            const rect = cameraView.getBoundingClientRect();
+            const rect = viewCamera.getBoundingClientRect();
             let px = ((me.clientX - rect.left) / rect.width * 100).toFixed(2);
             let py = ((me.clientY - rect.top) / rect.height * 100).toFixed(2);
             
@@ -200,18 +286,22 @@ function createHandle(s, idx, mode) {
         };
         document.onmouseup = () => { document.onmousemove = null; };
     };
-    cameraView.appendChild(handle);
+    viewCamera.appendChild(handle);
 }
 
-// 실시간 데이터 업데이트 및 시나리오 테스트 실행
+// 실시간 데이터 업데이트 및 시나리오 테스트 실행 (전역 등록)
 window.updateScenarioData = (idx, key, val) => {
     scenarios[idx][key] = val;
     refreshEditor();
 };
 
+// [교정] 버튼을 눌렀을 때 즉시 시뮬레이션 엔진이 실행되도록 수정
 window.testScenario = (idx) => {
     const s = scenarios[idx];
-    // 기존 시뮬레이션 엔진(launch) 함수 호출
+    
+    // (arguments.timeTick || 0) 충돌을 방지하기 위해 arguments 초기화
+    // 이는 launchProjectile 함수 내의 `let timeTick = 0;`으로 이미 처리됨.
+
     // speed 값은 FPV와 RPG의 특성에 맞게 조정
     const speed = s.type === 'FPV' ? 0.008 : 0.035;
     const box = s.type === 'FPV' ? targetBox : rpgProjectileBox;
@@ -219,9 +309,9 @@ window.testScenario = (idx) => {
     // HUD 로그 생성 및 실행 (기존 함수 활용)
     const logRes = updateHUD(s.type, s.startX, s.startY);
     
-    // 경로 기반 이동 실행 (기존 launch 함수 구조 활용)
-    // 여기서 willIntercept는 테스트를 위해 82% 확률 적용
+    // 요격 확률은 테스트를 위해 82% 그대로 적용
     const willIntercept = Math.random() <= 0.82;
+    // 요격 지점 랜덤 (50~60% 진행 구간)
     const interceptAt = 0.5 + (Math.random() * 0.1);
     
     // 사수 배경이 필요할 경우 (RPG)
@@ -239,6 +329,7 @@ window.testScenario = (idx) => {
     }
 };
 
+// 실제 경로 이동 및 요격 엔진
 function executePath(box, s, speed, willIntercept, interceptAt, logRes) {
     let t = 0;
     box.style.display = 'block';
@@ -258,13 +349,13 @@ function executePath(box, s, speed, willIntercept, interceptAt, logRes) {
             clearInterval(moveLoop);
             box.style.display = 'none';
             // % 좌표를 픽셀로 변환하여 폭발 생성
-            const rect = cameraView.getBoundingClientRect();
+            const rect = viewCamera.getBoundingClientRect();
             createExplosion((curX/100)*rect.width, (curY/100)*rect.height);
             logRes.innerHTML = `<span class="log-success">INTERCEPTED (${Math.round(t*100)}%)</span>`;
             return;
         }
 
-        if (t >= 1) {
+        if (timeTick >= 1) {
             clearInterval(moveLoop);
             box.style.display = 'none';
             logRes.innerHTML = `<span class="log-alert">IMPACT!</span>`;
@@ -274,7 +365,7 @@ function executePath(box, s, speed, willIntercept, interceptAt, logRes) {
 
 document.getElementById('add-fpv-path').onclick = () => addScenario('FPV');
 document.getElementById('add-rpg-path').onclick = () => addScenario('RPG');
-document.getElementById('export-data').onclick = () => {
+document.getElementById('solve-new').onclick = () => {
     console.log("--- FINAL SCENARIO DATA ---");
     console.log(JSON.stringify(scenarios, null, 2));
     alert("콘솔(F12)에서 데이터를 확인하세요.");
