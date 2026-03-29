@@ -1,5 +1,5 @@
 // =========================================
-// 1. 시나리오 데이터 및 DOM 참조
+// 1. SCENARIO DATA & DOM REFERENCE
 // =========================================
 let SCENARIOS = [
   { id: "FPV_1", type: "FPV", startX: "25.00", startY: "6.39", startSize: 5, endX: "43.48", endY: "68.52", endSize: "15" },
@@ -27,16 +27,16 @@ const rpgProjectileBox = document.getElementById('rpg-projectile-box');
 const cameraModeVal = document.getElementById('camera-mode-val');
 const hudStatusVal = document.getElementById('hud-status-val');
 
-const INTERCEPT_CHANCE = 0.82; 
+// 요격 확률 90%로 상향
+const INTERCEPT_CHANCE = 0.90; 
 let currentAnimationLoop = null;
 
-// [튜토리얼용 전역 상태 변수]
 let isTutorialActive = true;
 let isPaused = false;
 let tutPhase = 'INIT'; 
 
 // =========================================
-// 2. 엔진: 폭발 효과 및 컴뱃 로그(Combat Log)
+// 2. ENGINE: EXPLOSION & COMBAT LOG
 // =========================================
 function createExplosion(x_pc, y_pc) {
     const exp = document.createElement('div');
@@ -76,7 +76,7 @@ function updateHUD(name, startX_pc, startY_pc, endX_pc, endY_pc) {
 }
 
 // =========================================
-// 3. 통합 시뮬레이션 실행 루프
+// 3. INTEGRATED SIMULATION LOOP
 // =========================================
 function runScenario(scenarioObj) {
     if (currentAnimationLoop) {
@@ -105,7 +105,7 @@ function runScenario(scenarioObj) {
         
         if (isTutorialActive && tutPhase === 'WAIT_SPAWN') {
             isPaused = true;
-            showTut(rpgGunnerBox, "위협(사수)이 식별되었습니다. 시스템이 표적의 좌표를 획득합니다.");
+            showTut(rpgGunnerBox, "Threat (Shooter) identified. The system is acquiring the target's coordinates.");
             
             window.tutResumeCallback = () => {
                 tutPhase = 'WAIT_PROJECTILE';
@@ -133,7 +133,7 @@ function runScenario(scenarioObj) {
             box.style.width = `${scenarioObj.startSize}%`;
             box.style.transform = 'translate(-50%, -50%)';
             
-            showTut(box, "위협(드론)이 식별되었습니다. 시스템이 표적의 좌표를 획득합니다.");
+            showTut(box, "Threat (Drone) identified. The system is acquiring the target's coordinates.");
             window.tutResumeCallback = () => {
                 tutPhase = 'WAIT_PROJECTILE';
                 animateProjectile(box, scenarioObj, speed, willIntercept, interceptAt, logRes);
@@ -154,7 +154,7 @@ function animateProjectile(box, s, speed, willIntercept, interceptAt, logRes) {
 
         if (isTutorialActive && tutPhase === 'WAIT_PROJECTILE' && t > 0.05) {
             isPaused = true;
-            showTut(box, "투사체 접근이 감지되었습니다. 궤적을 분석하여 예상 요격 지점을 산출합니다.");
+            showTut(box, "Projectile approach detected. Analyzing trajectory to calculate the estimated interception point.");
             window.tutResumeCallback = () => { tutPhase = 'WAIT_EXPLOSION'; };
             return;
         }
@@ -182,14 +182,14 @@ function animateProjectile(box, s, speed, willIntercept, interceptAt, logRes) {
                 exp.id = 'tut-explosion';
                 exp.style.left = `${curX}%`;
                 exp.style.top = `${curY}%`;
-                exp.style.width = '60px'; // 크기 명시 (오차 방지)
+                exp.style.width = '60px'; 
                 exp.style.height = '60px';
                 exp.style.transform = 'translate(-50%, -50%)';
                 exp.style.background = 'radial-gradient(circle, #fff 10%, #ff0 40%, #f00 70%, transparent 100%)';
                 exp.style.opacity = '1';
                 viewCamera.appendChild(exp);
 
-                showTut(exp, "요격 성공. 당사 시스템은 500m 이내의 모든 표적을 무력화할 수 있습니다.");
+                showTut(exp, "Interception successful. Our system can neutralize any target within 500m.");
                 window.tutResumeCallback = () => {
                     exp.remove();
                     tutPhase = 'WAIT_LOG';
@@ -219,7 +219,7 @@ function triggerRandomAttack() {
 }
 
 // =========================================
-// 4. UI 이벤트 리스너
+// 4. UI EVENT LISTENERS
 // =========================================
 document.getElementById('btn-camera').onclick = () => {
     viewCamera.classList.add('active'); viewLog.classList.remove('active');
@@ -245,15 +245,14 @@ viewCamera.onclick = (e) => {
 };
 
 // =========================================================================
-// 5. 완벽한 하이라이트: 스텐실(Hole Punch) 기법 튜토리얼
+// 5. STENCIL HOLE-PUNCH TUTORIAL SYSTEM
 // =========================================================================
 const tutorialCSS = `
 #tutorial-overlay {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     z-index: 10000; display: none; overflow: hidden;
-    pointer-events: none; /* 클릭 방해 금지 */
+    pointer-events: none; 
 }
-/* 이 구멍(Hole)의 거대한 그림자가 화면을 덮어버립니다. 구멍 안은 100% 투명! */
 #tutorial-hole {
     position: absolute;
     box-shadow: 0 0 0 20000px rgba(0, 0, 0, 0.75); 
@@ -267,7 +266,7 @@ const tutorialCSS = `
     background: #0a0a0a; border: 2px solid #0f0; color: #0f0;
     padding: 20px; max-width: 320px; display: none;
     box-shadow: 0 0 15px rgba(0, 255, 0, 0.3); font-family: monospace;
-    pointer-events: auto; /* 버튼 클릭을 위해 활성화 */
+    pointer-events: auto; 
 }
 #tutorial-box button {
     margin-top: 20px; background: rgba(0,255,0,0.2); color: #0f0;
@@ -279,7 +278,6 @@ const tutorialCSS = `
 `;
 document.head.insertAdjacentHTML('beforeend', `<style>${tutorialCSS}</style>`);
 
-// 오버레이와 구멍(Hole) 생성
 const tutOverlay = document.createElement('div');
 tutOverlay.id = 'tutorial-overlay';
 tutOverlay.innerHTML = `<div id="tutorial-hole"></div>`;
@@ -294,10 +292,10 @@ document.body.appendChild(tutBox);
 
 let tutIndex = 0;
 const initialSteps = [
-    { target: null, text: "Zontik-1 APS 소프트웨어 데모입니다.<br><br>본 과정에서는 시스템의 탐지 및 요격 알고리즘을 안내합니다." },
-    { target: ".hud-mode", text: "현재 광학 장비의 작동 모드(OPTICAL / IR)를 표시합니다." },
-    { target: ".hud-top-center", text: "상단 패널에서 시스템 동기화 시간과 센서 연결 상태를 확인합니다." },
-    { target: ".hud-azimuth", text: "하단 패널은 식별된 위협의 방위각(Azimuth)과 예상 거리를 실시간으로 산출합니다." }
+    { target: null, text: "Welcome to the Zontik-1 APS software demo.<br><br>This tutorial will guide you through the system's detection and interception algorithms." },
+    { target: ".hud-mode", text: "Displays the current operating mode of the optical equipment (OPTICAL / IR)." },
+    { target: ".hud-top-center", text: "Check the system synchronization time and sensor connection status on the top panel." },
+    { target: ".hud-azimuth", text: "The bottom panel calculates the azimuth and estimated distance of the identified threat in real-time." }
 ];
 
 function showTut(targetEl, text) {
@@ -306,20 +304,16 @@ function showTut(targetEl, text) {
     document.getElementById('tutorial-text').innerHTML = text;
     
     if (targetEl) {
-        // 대상의 실제 화면 좌표 측정
         const rect = targetEl.getBoundingClientRect();
         
-        // 구멍 열기 (화면 전체 덮기 시작)
         tutHole.style.display = 'block';
-        tutOverlay.style.background = 'transparent'; // 오버레이 자체 투명화
+        tutOverlay.style.background = 'transparent'; 
         
-        // 구멍 위치 및 크기 정밀 조정 (여백 포함)
         tutHole.style.left = (rect.left - 8) + 'px';
         tutHole.style.top = (rect.top - 8) + 'px';
         tutHole.style.width = (rect.width + 16) + 'px';
         tutHole.style.height = (rect.height + 16) + 'px';
         
-        // 텍스트 박스 위치 설정
         let topPos = rect.bottom + 20;
         let leftPos = rect.left;
         
@@ -330,9 +324,8 @@ function showTut(targetEl, text) {
         tutBox.style.left = leftPos + 'px';
         tutBox.style.transform = 'none';
     } else {
-        // 첫 시작화면 (타겟 없음)
         tutHole.style.display = 'none';
-        tutOverlay.style.background = 'rgba(0,0,0,0.75)'; // 이때만 오버레이 자체를 검게
+        tutOverlay.style.background = 'rgba(0,0,0,0.75)'; 
         tutBox.style.top = '50%';
         tutBox.style.left = '50%';
         tutBox.style.transform = 'translate(-50%, -50%)';
@@ -364,11 +357,11 @@ window.nextTutorialStep = () => {
         }
     } else if (tutPhase === 'WAIT_LOG') {
         tutPhase = 'LOG_TAB';
-        showTut(document.getElementById('btn-log'), "교전이 종료되었습니다. 상단의 Combat Log 버튼을 클릭하십시오.");
+        showTut(document.getElementById('btn-log'), "Engagement concluded. Please click the Combat Log button at the top.");
     } else if (tutPhase === 'LOG_TAB') {
         document.getElementById('btn-log').click();
         tutPhase = 'DONE';
-        showTut(document.getElementById('log-view'), "Combat Log 화면입니다. 교전 발생 시간, 표적 방위각, 그리고 요격 결과 데이터가 기록됩니다.<br><br>이제 튜토리얼을 종료하고 실전 시뮬레이션으로 전환합니다.");
+        showTut(document.getElementById('log-view'), "This is the Combat Log screen. Engagement time, target azimuth, and interception result data are recorded here.<br><br>The tutorial will now end and transition to the live simulation.");
     } else if (tutPhase === 'DONE') {
         hideTut();
         isTutorialActive = false;
