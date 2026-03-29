@@ -27,7 +27,6 @@ const rpgProjectileBox = document.getElementById('rpg-projectile-box');
 const cameraModeVal = document.getElementById('camera-mode-val');
 const hudStatusVal = document.getElementById('hud-status-val');
 
-// 요격 확률 90%로 상향
 const INTERCEPT_CHANCE = 0.90; 
 let currentAnimationLoop = null;
 
@@ -96,11 +95,21 @@ function runScenario(scenarioObj) {
     const logRes = updateHUD(isFPV ? 'FPV DRONE' : 'RPG WARHEAD', scenarioObj.startX, scenarioObj.startY, scenarioObj.endX, scenarioObj.endY);
 
     if (!isFPV) {
+        // 애니메이션 초기화 상태: 트랜지션 끄고 약간 왼쪽 배치
+        rpgGunnerBox.style.transition = 'none';
         rpgGunnerBox.style.display = 'block';
         rpgGunnerBox.style.left = `${scenarioObj.startX}%`;
         rpgGunnerBox.style.top = `${scenarioObj.startY}%`;
         rpgGunnerBox.style.width = `${scenarioObj.startSize}%`;
-        rpgGunnerBox.style.transform = 'translate(-50%, -50%)'; 
+        rpgGunnerBox.style.transform = 'translate(calc(-50% - 30px), -50%)'; 
+        rpgGunnerBox.style.opacity = '0';
+        
+        // 브라우저 렌더링 강제 업데이트
+        void rpgGunnerBox.offsetWidth;
+        
+        // 등장 애니메이션: 중앙으로 오면서 페이드 인
+        rpgGunnerBox.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+        rpgGunnerBox.style.transform = 'translate(-50%, -50%)';
         rpgGunnerBox.style.opacity = '1';
         
         if (isTutorialActive && tutPhase === 'WAIT_SPAWN') {
@@ -110,8 +119,10 @@ function runScenario(scenarioObj) {
             window.tutResumeCallback = () => {
                 tutPhase = 'WAIT_PROJECTILE';
                 setTimeout(() => { 
+                    // 퇴장 애니메이션: 오른쪽으로 빠지면서 페이드 아웃
+                    rpgGunnerBox.style.transform = 'translate(calc(-50% + 30px), -50%)';
                     rpgGunnerBox.style.opacity = '0'; 
-                    setTimeout(() => { rpgGunnerBox.style.display = 'none'; }, 300);
+                    setTimeout(() => { rpgGunnerBox.style.display = 'none'; }, 500);
                 }, 1000);
                 animateProjectile(box, scenarioObj, speed, willIntercept, interceptAt, logRes);
             };
@@ -119,8 +130,10 @@ function runScenario(scenarioObj) {
             setTimeout(() => {
                 animateProjectile(box, scenarioObj, speed, willIntercept, interceptAt, logRes);
                 setTimeout(() => { 
+                    // 퇴장 애니메이션: 오른쪽으로 빠지면서 페이드 아웃
+                    rpgGunnerBox.style.transform = 'translate(calc(-50% + 30px), -50%)';
                     rpgGunnerBox.style.opacity = '0'; 
-                    setTimeout(() => { rpgGunnerBox.style.display = 'none'; }, 300);
+                    setTimeout(() => { rpgGunnerBox.style.display = 'none'; }, 500);
                 }, 1000);
             }, 600);
         }
