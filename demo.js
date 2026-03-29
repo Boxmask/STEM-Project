@@ -90,6 +90,7 @@ function runScenario(scenarioObj) {
     const box = isFPV ? targetBox : rpgProjectileBox;
     const speed = isFPV ? 0.008 : 0.035;
     
+    // 튜토리얼 중에는 무조건 요격되도록 설정
     const willIntercept = isTutorialActive ? true : (Math.random() <= INTERCEPT_CHANCE);
     const interceptAt = 0.5 + (Math.random() * 0.1); 
 
@@ -103,6 +104,7 @@ function runScenario(scenarioObj) {
         rpgGunnerBox.style.transform = 'translate(-50%, -50%)'; 
         rpgGunnerBox.style.opacity = '1';
         
+        // [튜토리얼 훅] 적 스폰 시 시간 정지
         if (isTutorialActive && tutPhase === 'WAIT_SPAWN') {
             isPaused = true;
             showTut(rpgGunnerBox, "위협(사수)이 식별되었습니다. 시스템이 표적의 좌표를 획득합니다.");
@@ -125,6 +127,7 @@ function runScenario(scenarioObj) {
             }, 600);
         }
     } else {
+        // FPV
         if (isTutorialActive && tutPhase === 'WAIT_SPAWN') {
             isPaused = true;
             box.style.display = 'block';
@@ -150,8 +153,9 @@ function animateProjectile(box, s, speed, willIntercept, interceptAt, logRes) {
     box.style.transform = 'translate(-50%, -50%)';
 
     currentAnimationLoop = setInterval(() => {
-        if (isPaused) return; 
+        if (isPaused) return; // 엔진 시간 정지
 
+        // [튜토리얼 훅] 투사체 이동 감지 시 시간 정지
         if (isTutorialActive && tutPhase === 'WAIT_PROJECTILE' && t > 0.05) {
             isPaused = true;
             showTut(box, "투사체 접근이 감지되었습니다. 궤적을 분석하여 예상 요격 지점을 산출합니다.");
@@ -175,6 +179,7 @@ function animateProjectile(box, s, speed, willIntercept, interceptAt, logRes) {
             box.style.display = 'none';
             logRes.innerHTML = `<span class="log-success">NEUTRALIZED.</span>`;
             
+            // [튜토리얼 훅] 요격 시 시간 정지 및 정적 폭발 생성
             if (isTutorialActive && tutPhase === 'WAIT_EXPLOSION') {
                 isPaused = true;
                 const exp = document.createElement('div');
@@ -190,7 +195,7 @@ function animateProjectile(box, s, speed, willIntercept, interceptAt, logRes) {
                 window.tutResumeCallback = () => {
                     exp.remove();
                     tutPhase = 'WAIT_LOG';
-                    nextTutorialStep(); 
+                    nextTutorialStep(); // 로그 탭으로 강제 이동
                 };
                 return;
             }
@@ -234,7 +239,7 @@ setInterval(() => {
 }, 1000);
 
 viewCamera.onclick = (e) => {
-    if (isTutorialActive) return; 
+    if (isTutorialActive) return; // 튜토리얼 중 배경 클릭 방지
     const isOptical = cameraModeVal.innerText === 'OPTICAL';
     cameraModeVal.innerText = isOptical ? 'IR' : 'OPTICAL';
     hudStatusVal.innerText = `${isOptical ? 'IR' : 'OPTICAL'} SENSOR: ONLINE`;
@@ -242,7 +247,7 @@ viewCamera.onclick = (e) => {
 };
 
 // =========================================================================
-// 5. 동적 인터랙티브 튜토리얼 시스템 (CSS 교정 완료)
+// 5. 동적 인터랙티브 튜토리얼 시스템 (상태 기반 가이드)
 // =========================================================================
 const tutorialCSS = `
 #tutorial-overlay {
@@ -263,10 +268,7 @@ const tutorialCSS = `
 #tutorial-box button:hover {
     background: #0f0; color: #000;
 }
-
-/* [교정 완료] static 요소도 강조 배경 위로 띄우기 위해 position 속성 추가 */
 .tutorial-highlight {
-    position: relative !important; /* static 요소의 z-index 활성화를 위해 필수 */
     z-index: 10001 !important;
     outline: 4px solid #0f0 !important;
     box-shadow: 0 0 20px rgba(0,255,0,0.8) !important;
@@ -305,6 +307,7 @@ function showTut(targetEl, text) {
         let topPos = rect.bottom + 15;
         let leftPos = rect.left;
         
+        // 화면을 벗어나지 않도록 좌표 보정
         if (topPos + 150 > window.innerHeight) topPos = rect.top - 150;
         if (leftPos + 320 > window.innerWidth) leftPos = window.innerWidth - 340;
         
@@ -332,11 +335,11 @@ window.nextTutorialStep = () => {
         } else {
             tutPhase = 'WAIT_SPAWN';
             hideTut();
-            triggerRandomAttack(); 
+            triggerRandomAttack(); // 여기서 실제 엔진의 첫 공격이 시작됨
         }
     } else if (tutPhase === 'WAIT_SPAWN' || tutPhase === 'WAIT_PROJECTILE' || tutPhase === 'WAIT_EXPLOSION') {
         hideTut();
-        isPaused = false; 
+        isPaused = false; // 엔진 시간 재개
         if (window.tutResumeCallback) {
             window.tutResumeCallback();
             window.tutResumeCallback = null;
@@ -353,8 +356,9 @@ window.nextTutorialStep = () => {
         isTutorialActive = false;
         isPaused = false;
         document.getElementById('btn-camera').click();
-        setTimeout(triggerRandomAttack, 1000); 
+        setTimeout(triggerRandomAttack, 1000); // 무한 시뮬레이션 돌입
     }
 };
 
+// 스크립트 로드 후 튜토리얼 자동 시작
 setTimeout(() => { showTut(null, initialSteps[0].text); }, 500);
