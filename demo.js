@@ -33,7 +33,7 @@ let currentAnimationLoop = null;
 // [튜토리얼용 전역 상태 변수]
 let isTutorialActive = true;
 let isPaused = false;
-let tutPhase = 'INIT'; // INIT, WAIT_SPAWN, WAIT_PROJECTILE, WAIT_EXPLOSION, WAIT_LOG, LOG_TAB, DONE
+let tutPhase = 'INIT'; 
 
 // =========================================
 // 2. 엔진: 폭발 효과 및 컴뱃 로그(Combat Log)
@@ -76,7 +76,7 @@ function updateHUD(name, startX_pc, startY_pc, endX_pc, endY_pc) {
 }
 
 // =========================================
-// 3. 통합 시뮬레이션 실행 루프 (정지 기능 포함)
+// 3. 통합 시뮬레이션 실행 루프
 // =========================================
 function runScenario(scenarioObj) {
     if (currentAnimationLoop) {
@@ -90,7 +90,6 @@ function runScenario(scenarioObj) {
     const box = isFPV ? targetBox : rpgProjectileBox;
     const speed = isFPV ? 0.008 : 0.035;
     
-    // 튜토리얼 중에는 무조건 요격되도록 설정
     const willIntercept = isTutorialActive ? true : (Math.random() <= INTERCEPT_CHANCE);
     const interceptAt = 0.5 + (Math.random() * 0.1); 
 
@@ -104,7 +103,6 @@ function runScenario(scenarioObj) {
         rpgGunnerBox.style.transform = 'translate(-50%, -50%)'; 
         rpgGunnerBox.style.opacity = '1';
         
-        // [튜토리얼 훅] 적 스폰 시 시간 정지
         if (isTutorialActive && tutPhase === 'WAIT_SPAWN') {
             isPaused = true;
             showTut(rpgGunnerBox, "위협(사수)이 식별되었습니다. 시스템이 표적의 좌표를 획득합니다.");
@@ -127,7 +125,6 @@ function runScenario(scenarioObj) {
             }, 600);
         }
     } else {
-        // FPV
         if (isTutorialActive && tutPhase === 'WAIT_SPAWN') {
             isPaused = true;
             box.style.display = 'block';
@@ -153,9 +150,8 @@ function animateProjectile(box, s, speed, willIntercept, interceptAt, logRes) {
     box.style.transform = 'translate(-50%, -50%)';
 
     currentAnimationLoop = setInterval(() => {
-        if (isPaused) return; // 엔진 시간 정지
+        if (isPaused) return; 
 
-        // [튜토리얼 훅] 투사체 이동 감지 시 시간 정지
         if (isTutorialActive && tutPhase === 'WAIT_PROJECTILE' && t > 0.05) {
             isPaused = true;
             showTut(box, "투사체 접근이 감지되었습니다. 궤적을 분석하여 예상 요격 지점을 산출합니다.");
@@ -179,7 +175,6 @@ function animateProjectile(box, s, speed, willIntercept, interceptAt, logRes) {
             box.style.display = 'none';
             logRes.innerHTML = `<span class="log-success">NEUTRALIZED.</span>`;
             
-            // [튜토리얼 훅] 요격 시 시간 정지 및 정적 폭발 생성
             if (isTutorialActive && tutPhase === 'WAIT_EXPLOSION') {
                 isPaused = true;
                 const exp = document.createElement('div');
@@ -187,6 +182,9 @@ function animateProjectile(box, s, speed, willIntercept, interceptAt, logRes) {
                 exp.id = 'tut-explosion';
                 exp.style.left = `${curX}%`;
                 exp.style.top = `${curY}%`;
+                exp.style.width = '60px'; // 크기 명시 (오차 방지)
+                exp.style.height = '60px';
+                exp.style.transform = 'translate(-50%, -50%)';
                 exp.style.background = 'radial-gradient(circle, #fff 10%, #ff0 40%, #f00 70%, transparent 100%)';
                 exp.style.opacity = '1';
                 viewCamera.appendChild(exp);
@@ -195,7 +193,7 @@ function animateProjectile(box, s, speed, willIntercept, interceptAt, logRes) {
                 window.tutResumeCallback = () => {
                     exp.remove();
                     tutPhase = 'WAIT_LOG';
-                    nextTutorialStep(); // 로그 탭으로 강제 이동
+                    nextTutorialStep(); 
                 };
                 return;
             }
@@ -239,7 +237,7 @@ setInterval(() => {
 }, 1000);
 
 viewCamera.onclick = (e) => {
-    if (isTutorialActive) return; // 튜토리얼 중 배경 클릭 방지
+    if (isTutorialActive) return; 
     const isOptical = cameraModeVal.innerText === 'OPTICAL';
     cameraModeVal.innerText = isOptical ? 'IR' : 'OPTICAL';
     hudStatusVal.innerText = `${isOptical ? 'IR' : 'OPTICAL'} SENSOR: ONLINE`;
@@ -247,19 +245,29 @@ viewCamera.onclick = (e) => {
 };
 
 // =========================================================================
-// 5. 동적 인터랙티브 튜토리얼 시스템 (상태 기반 가이드)
+// 5. 완벽한 하이라이트: 스텐실(Hole Punch) 기법 튜토리얼
 // =========================================================================
 const tutorialCSS = `
 #tutorial-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 10000; display: none;
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: 10000; display: none; overflow: hidden;
+    pointer-events: none; /* 클릭 방해 금지 */
+}
+/* 이 구멍(Hole)의 거대한 그림자가 화면을 덮어버립니다. 구멍 안은 100% 투명! */
+#tutorial-hole {
+    position: absolute;
+    box-shadow: 0 0 0 20000px rgba(0, 0, 0, 0.75); 
+    border: 2px solid #0f0;
+    border-radius: 4px;
+    display: none;
+    transition: all 0.3s ease-out;
 }
 #tutorial-box {
     position: fixed; z-index: 10002;
     background: #0a0a0a; border: 2px solid #0f0; color: #0f0;
     padding: 20px; max-width: 320px; display: none;
     box-shadow: 0 0 15px rgba(0, 255, 0, 0.3); font-family: monospace;
+    pointer-events: auto; /* 버튼 클릭을 위해 활성화 */
 }
 #tutorial-box button {
     margin-top: 20px; background: rgba(0,255,0,0.2); color: #0f0;
@@ -268,17 +276,16 @@ const tutorialCSS = `
 #tutorial-box button:hover {
     background: #0f0; color: #000;
 }
-.tutorial-highlight {
-    z-index: 10001 !important;
-    outline: 4px solid #0f0 !important;
-    box-shadow: 0 0 20px rgba(0,255,0,0.8) !important;
-}
 `;
 document.head.insertAdjacentHTML('beforeend', `<style>${tutorialCSS}</style>`);
 
+// 오버레이와 구멍(Hole) 생성
 const tutOverlay = document.createElement('div');
 tutOverlay.id = 'tutorial-overlay';
+tutOverlay.innerHTML = `<div id="tutorial-hole"></div>`;
 document.body.appendChild(tutOverlay);
+
+const tutHole = document.getElementById('tutorial-hole');
 
 const tutBox = document.createElement('div');
 tutBox.id = 'tutorial-box';
@@ -298,16 +305,24 @@ function showTut(targetEl, text) {
     tutBox.style.display = 'block';
     document.getElementById('tutorial-text').innerHTML = text;
     
-    document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
-    
     if (targetEl) {
-        targetEl.classList.add('tutorial-highlight');
+        // 대상의 실제 화면 좌표 측정
         const rect = targetEl.getBoundingClientRect();
         
-        let topPos = rect.bottom + 15;
+        // 구멍 열기 (화면 전체 덮기 시작)
+        tutHole.style.display = 'block';
+        tutOverlay.style.background = 'transparent'; // 오버레이 자체 투명화
+        
+        // 구멍 위치 및 크기 정밀 조정 (여백 포함)
+        tutHole.style.left = (rect.left - 8) + 'px';
+        tutHole.style.top = (rect.top - 8) + 'px';
+        tutHole.style.width = (rect.width + 16) + 'px';
+        tutHole.style.height = (rect.height + 16) + 'px';
+        
+        // 텍스트 박스 위치 설정
+        let topPos = rect.bottom + 20;
         let leftPos = rect.left;
         
-        // 화면을 벗어나지 않도록 좌표 보정
         if (topPos + 150 > window.innerHeight) topPos = rect.top - 150;
         if (leftPos + 320 > window.innerWidth) leftPos = window.innerWidth - 340;
         
@@ -315,6 +330,9 @@ function showTut(targetEl, text) {
         tutBox.style.left = leftPos + 'px';
         tutBox.style.transform = 'none';
     } else {
+        // 첫 시작화면 (타겟 없음)
+        tutHole.style.display = 'none';
+        tutOverlay.style.background = 'rgba(0,0,0,0.75)'; // 이때만 오버레이 자체를 검게
         tutBox.style.top = '50%';
         tutBox.style.left = '50%';
         tutBox.style.transform = 'translate(-50%, -50%)';
@@ -324,7 +342,7 @@ function showTut(targetEl, text) {
 function hideTut() {
     tutOverlay.style.display = 'none';
     tutBox.style.display = 'none';
-    document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+    tutHole.style.display = 'none';
 }
 
 window.nextTutorialStep = () => {
@@ -335,11 +353,11 @@ window.nextTutorialStep = () => {
         } else {
             tutPhase = 'WAIT_SPAWN';
             hideTut();
-            triggerRandomAttack(); // 여기서 실제 엔진의 첫 공격이 시작됨
+            triggerRandomAttack(); 
         }
     } else if (tutPhase === 'WAIT_SPAWN' || tutPhase === 'WAIT_PROJECTILE' || tutPhase === 'WAIT_EXPLOSION') {
         hideTut();
-        isPaused = false; // 엔진 시간 재개
+        isPaused = false; 
         if (window.tutResumeCallback) {
             window.tutResumeCallback();
             window.tutResumeCallback = null;
@@ -356,9 +374,8 @@ window.nextTutorialStep = () => {
         isTutorialActive = false;
         isPaused = false;
         document.getElementById('btn-camera').click();
-        setTimeout(triggerRandomAttack, 1000); // 무한 시뮬레이션 돌입
+        setTimeout(triggerRandomAttack, 1000); 
     }
 };
 
-// 스크립트 로드 후 튜토리얼 자동 시작
 setTimeout(() => { showTut(null, initialSteps[0].text); }, 500);
