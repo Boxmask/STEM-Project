@@ -3,48 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Zont</title>
+    <title>Zont | About Us</title>
     <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* =========================================
+           ABOUT US: GRADIENT IMAGE SECTIONS
+           ========================================= */
+        .about-content {
+            padding: 0; /* 기존 패딩 초기화 */
+            max-width: 100%; /* 너비를 꽉 채움 */
+        }
+
+        .about-item {
+            position: relative;
+            width: 100%;
+            min-height: 400px; /* 각 섹션의 최소 높이 */
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            border-bottom: 2px solid var(--color-4); /* 브랜드 컬러 구분선 */
+        }
+
+        .about-item:last-child {
+            border-bottom: none;
+        }
+
+        /* 텍스트 블록 기본 스타일 */
+        .content-block {
+            position: relative;
+            z-index: 2; /* 이미지 그라데이션 위에 위치 */
+            max-width: 600px;
+            padding: 40px;
+            color: #ffffff;
+        }
+
+        .content-block h3 {
+            font-size: 2.5rem;
+            color: var(--color-4); /* 브랜드 네온 그린 */
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .content-block p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .content-block ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 1rem;
+        }
+
+        .content-block li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            color: var(--color-5);
+        }
+
+        .content-block li::before {
+            content: 'â—';
+            position: absolute;
+            left: 0;
+            color: var(--color-4);
+        }
+
+        /* -----------------------------------------
+           ITEM 1: Modular (Left-to-Right Fade)
+           ----------------------------------------- */
+        .item-modular {
+            background: 
+                /* 검은색 그라데이션: 왼쪽(보임) -> 오른쪽(페이드아웃) */
+                linear-gradient(to right, rgba(26, 29, 18, 1) 40%, rgba(26, 29, 18, 0) 70%),
+                url("company_building.jpg") no-repeat center right;
+            background-size: auto 100%; /* 이미지를 오른쪽에 배치하고 높이 맞춤 */
+        }
+
+        /* 텍스트를 왼쪽에 정렬 */
+        .left-aligned {
+            margin-right: auto;
+            margin-left: 10%;
+        }
+
+        /* -----------------------------------------
+           ITEM 2: Mounted (Right-to-Left Fade)
+           ----------------------------------------- */
+        .item-mounted {
+            background: 
+                /* 검은색 그라데이션: 오른쪽(보임) -> 왼쪽(페이드아웃) */
+                linear-gradient(to left, rgba(26, 29, 18, 1) 40%, rgba(26, 29, 18, 0) 70%),
+                url("BREM-80-ARV-at-Army-2024-event-scaled.jpg") no-repeat center left;
+            background-size: auto 100%; /* 이미지를 왼쪽에 배치하고 높이 맞춤 */
+        }
+
+        /* 텍스트를 오른쪽에 정렬 */
+        .right-aligned {
+            margin-left: auto;
+            margin-right: 10%;
+        }
+
+        /* -----------------------------------------
+           ITEM 3: Integrated (Center-to-Edge Fade)
+           ----------------------------------------- */
+        .item-integrated {
+            background: 
+                /* 원형 그라데이션: 중앙(투명-보임) -> 가장자리(검은색-페이드아웃) */
+                radial-gradient(circle at center, rgba(26, 29, 18, 0) 30%, rgba(26, 29, 18, 1) 70%),
+                url("image-5.webp") no-repeat center;
+            background-size: cover;
+        }
+
+        /* 텍스트를 중앙에 정렬 */
+        .center-aligned {
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .center-aligned ul {
+            display: inline-block;
+            text-align: left; /* 리스트 내용은 왼쪽 정렬 */
+        }
+    </style>
 </head>
 <body>
     <nav id="navbar">
-        <div class="logo">ZONT</div>
-        <ul class="nav-links">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="about.html" class="active">About</a></li>
-            <li><a href="index.html#specs">Specs</a></li>
-            <li><a href="index.html#download">Download</a></li>
-        </ul>
-    </nav>
+    <div class="logo">ZONT</div>
+    <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="index.html#specs">Specs</a></li>
+        <li><a href="demo.html">Demo</a></li> 
+        <li><a href="index.html#download">Download</a></li>
+    </ul>
+</nav>
 
-    <section id="about" style="padding-top: 12rem;">
-        <h2 class="section-title">About Zont</h2>
-        <div class="about-text-container">
-            <p>Welcome to Zont. We do not build tanks. We do not build infantry fighting vehicles. We build the definitive guarantee that the soldiers inside them come home alive.</p>
-            <p>Headquartered in the industrial heartland of Eastern Europe, Zont is a premier defense technology firm specializing exclusively in next-generation Active Protection Systems (APS). In a world where anti-armor threats are evolving at a breakneck pace—from top-attack munitions to hypersonic ATGMs and loitering drones—traditional passive armor is no longer enough. The future of armored warfare requires a proactive shield. It requires Zont.</p>
-
-            <h3>Our Story: The Latecomer’s Advantage</h3>
-            <p>Zont was not born out of a bloated, Cold War-era state conglomerate. We are a distinctly modern enterprise, founded by visionary engineers Hye Kang Jee and D.Y. Kim.</p>
-            <p>Before founding Zont, Jee and Kim spent years analyzing global armored conflicts. They recognized a fatal flaw in the legacy defense industry: the pioneers of APS technology were trapped by their own outdated architectures. Older systems were heavy, power-hungry, and relied on rudimentary programming that often endangered accompanying infantry.</p>
-            <p>We didn't invent the Active Protection System. We perfected it.</p>
-            <p>As a latecomer to the defense market, Zont entered the field unburdened by legacy code or obsolete hardware. Instead, Jee and Kim leveraged the greatest asset of the 21st century: Data. By aggregating and analyzing thousands of terabytes of modern combat telemetry, ballistic trajectories, and threat-deployment patterns, Zont developed algorithmic models that predict and intercept threats with unprecedented efficiency. We combined the relentless, rugged reliability of Eastern European heavy manufacturing with cutting-edge, data-driven machine learning.</p>
-            <p>The result? Systems that react faster, weigh less, and neutralize threats with mathematical precision.</p>
-
-            <h3>Our Philosophy: Efficiency Through Intelligence</h3>
-            <p>At Zont, we believe that an Active Protection System should be a seamless extension of the vehicle's nervous system.</p>
-            <p>Traditional Eastern European defense doctrine has always favored brute force. We evolved that doctrine. While our hardware is built to withstand the harshest combat environments on Earth—from freezing mud to searing desert heat—our software operates with surgical elegance. By utilizing advanced AI and massive datasets, our systems don't just react to incoming fire; they classify, prioritize, and eliminate the threat using the exact minimum amount of kinetic force required. This radically reduces collateral damage, making our APS the safest in the world for dismounted infantry operating alongside our armor.</p>
-
-            <h3>Our Flagship: The Zontik-1 APS</h3>
-            <p>The culmination of our data-centric approach is our flagship product: the Zontik-1 (Russian for "Little Umbrella").</p>
-            <p>Do not let the name fool you. The Zontik-1 is a highly aggressive, 360-degree kinetic shield. Utilizing an integrated array of miniaturized AESA radars and hyper-fast electro-optical sensors, the Zontik-1 can detect, track, and intercept multi-directional threats in milliseconds.</p>
-            <p>Because the Zontik-1 was trained on our proprietary combat-data algorithms, it boasts the highest threat-discrimination rate in the industry. It will not waste countermeasures on small-arms fire or bird strikes. When a genuine threat is detected, the Zontik-1 deploys a tightly focused, high-explosive kinetic interceptor to physically shatter the incoming projectile before it ever touches the hull.</p>
-            <p>Compact, modular, and easily retrofitted onto both legacy platforms and next-generation vehicles, the Zontik-1 is the ultimate equalizer on the modern battlefield.</p>
-
-            <h3>The Future is Covered</h3>
-            <p>Warfare is changing, and the threats against armor are becoming smarter. But under the leadership of Hye Kang Jee and D.Y. Kim, Zont remains exactly one step ahead. We are continuously feeding new battlefield data into our neural networks, ensuring that our systems evolve faster than the weapons designed to beat them.</p>
-            <p>When the skies rain steel, we keep you covered.<br>Welcome to Zont.</p>
+    <header class="about-hero">
+        <div class="about-hero-content">
+            <h1>About Us</h1>
         </div>
+    </header>
+
+    <section class="about-content">
+        
+        <div class="about-item item-modular">
+            <div class="content-block left-aligned fade-in">
+                <h3>Modular Architecture</h3>
+                <p>The system is built around an independent, dual-tube rotary turret that can be seamlessly integrated onto diverse vehicular platforms.</p>
+                <ul>
+                    <li>360-degree Azimuth & -15° to +75° Elevation coverage.</li>
+                    <li>Dual Interceptor Launch Tubes for rapid sequential engagement.</li>
+                    <li>Standalone power unit with independent logic controller.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="about-item item-mounted">
+            <div class="content-block right-aligned fade-in">
+                <h3>Externally Mounted</h3>
+                <p>Built as a stand-alone bolt-on solution to provide kinetic protection with minimum impact on the base vehicle structure.</p>
+                <ul>
+                    <li>Preserves the integrity of the vehicle’s primary armor.</li>
+                    <li>Easily integrated without complex structural modifications.</li>
+                    <li>Ideally suited for both new production and retrofitting existing fleets.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="about-item item-integrated">
+            <div class="content-block center-aligned fade-in">
+                <h3>Integrated Technology</h3>
+                <p>Built as a stand-alone bolt-on solution to provide kinetic protection with minimum impact on the base vehicle structure.</p>
+                <ul>
+                    <li>Ideally suited for both new production and retrofitting existing fleets.</li>
+                    <li>Easily integrated without complex structural modifications.</li>
+                    <li>Preserves the integrity of the vehicle’s primary armor.</li>
+                </ul>
+            </div>
+        </div>
+
     </section>
 
     <script src="script.js"></script>
