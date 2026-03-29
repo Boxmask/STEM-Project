@@ -17,6 +17,7 @@ let SCENARIOS = [
 ];
 
 const viewCamera = document.getElementById('camera-view');
+const viewLog = document.getElementById('log-view');
 const logContent = document.getElementById('log-content');
 const turretBar = document.getElementById('turret-bar');
 const azimuthVal = document.getElementById('azimuth-val');
