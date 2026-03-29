@@ -2,8 +2,18 @@
 // 1. 시나리오 데이터 및 DOM 참조
 // =========================================
 let SCENARIOS = [
-    { id: 'FPV_1', type: 'FPV', startX: 16.67, startY: 22.22, startSize: 5, endX: 84.08, endY: 85.00, endSize: 20 },
-    { id: 'RPG_1', type: 'RPG', startX: 12.50, startY: 88.89, startSize: 5, endX: 84.08, endY: 85.00, endSize: 20 }
+  { id: "FPV_1", type: "FPV", startX: "25.00", startY: "6.39", startSize: 5, endX: "43.48", endY: "68.52", endSize: "15" },
+  { id: "RPG_1", type: "RPG", startX: "6.94", startY: "59.16", startSize: 5, endX: "13.55", endY: "85.32", endSize: "15" },
+  { id: "RPG_3", type: "RPG", startX: "20.74", startY: "51.28", startSize: "4", endX: "28.18", endY: "71.35", endSize: "16" },
+  { id: "FPV_4", type: "FPV", startX: "85.37", startY: "6.84", startSize: 5, endX: "78.85", endY: "65.25", endSize: "14" },
+  { id: "FPV_5", type: "FPV", startX: "36.87", startY: "8.03", startSize: 5, endX: "47.74", endY: "70.31", endSize: 20 },
+  { id: "FPV_6", type: "FPV", startX: "64.72", startY: "9.36", startSize: 5, endX: "63.55", endY: "67.19", endSize: 20 },
+  { id: "RPG_7", type: "RPG", startX: "92.89", startY: "51.28", startSize: "4", endX: "85.54", endY: "75.96", endSize: "16" },
+  { id: "RPG_8", type: "RPG", startX: "36.12", startY: "47.86", startSize: "3", endX: "40.05", endY: "68.82", endSize: "12" },
+  { id: "RPG_9", type: "RPG", startX: "59.36", startY: "48.46", startSize: "2", endX: "55.69", endY: "65.55", endSize: "13" },
+  { id: "FPV_10", type: "FPV", startX: "47.74", startY: "15.01", startSize: 5, endX: "54.68", endY: "61.84", endSize: 20 },
+  { id: "RPG_11", type: "RPG", startX: "45.40", startY: "47.86", startSize: "2", endX: "57.86", endY: "64.51", endSize: "11" },
+  { id: "FPV_12", type: "FPV", startX: "56.94", startY: "30.03", startSize: "3", endX: "68.98", endY: "64.36", endSize: "13" }
 ];
 
 const viewCamera = document.getElementById('camera-view');
@@ -81,23 +91,21 @@ function runScenario(scenarioObj) {
     const logRes = updateHUD(isFPV ? 'FPV DRONE' : 'RPG WARHEAD', scenarioObj.startX, scenarioObj.startY, scenarioObj.endX, scenarioObj.endY);
 
     if (!isFPV) {
-        // [수정됨] 사수 위치 중앙 정렬 및 에디터에서 설정한 크기 적용
         rpgGunnerBox.style.display = 'block';
         rpgGunnerBox.style.left = `${scenarioObj.startX}%`;
         rpgGunnerBox.style.top = `${scenarioObj.startY}%`;
         rpgGunnerBox.style.width = `${scenarioObj.startSize}%`;
-        rpgGunnerBox.style.transform = 'translate(-50%, -50%)'; // 강제 중앙 정렬
+        rpgGunnerBox.style.transform = 'translate(-50%, -50%)'; 
         rpgGunnerBox.style.opacity = '0';
         rpgGunnerBox.style.transition = 'opacity 0.3s';
         
-        // 브라우저 렌더링 강제 업데이트 후 페이드인
         void rpgGunnerBox.offsetWidth;
         rpgGunnerBox.style.opacity = '1';
         
         setTimeout(() => {
             animateProjectile(box, scenarioObj, speed, willIntercept, interceptAt, logRes);
             setTimeout(() => { 
-                rpgGunnerBox.style.opacity = '0'; // 사수 페이드아웃
+                rpgGunnerBox.style.opacity = '0'; 
                 setTimeout(() => { rpgGunnerBox.style.display = 'none'; }, 300);
             }, 1000);
         }, 600);
