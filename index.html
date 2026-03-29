@@ -19,11 +19,46 @@
     </ul>
 </nav>
 
-    <header id="home" class="hero">
-        <div class="hero-content">
-            <h1>ZONTIK-1</h1>
-            <p>Active Protection System</p>
-            <a href="#download" class="btn">Download Snapshot</a>
+  <header id="home" class="hero">
+        <div class="slider-container">
+            <div class="hero-slide active">
+                <div class="hero-content">
+                    <h1>ZONTIK-1</h1>
+                    <p>Active Protection System</p>
+                    <a href="#download" class="btn">Download Snapshot</a>
+                </div>
+            </div>
+            <div class="hero-slide">
+                <div class="hero-content">
+                    <h1>360° DEFENSE</h1>
+                    <p>Modular Architecture & Integration</p>
+                    <a href="about.html" class="btn">Discover More</a>
+                </div>
+            </div>
+            <div class="hero-slide">
+                <div class="hero-content">
+                    <h1>UNMATCHED SPECS</h1>
+                    <p>Explore the technical capabilities of Zontik-1.</p>
+                    <a href="#specs" class="btn">View Specifications</a>
+                </div>
+            </div>
+            <div class="hero-slide">
+                <div class="hero-content">
+                    <h1>LIVE SIMULATOR</h1>
+                    <p>Experience target identification algorithms.</p>
+                    <a href="demo.html" class="btn">Launch Demo</a>
+                </div>
+            </div>
+        </div>
+
+        <button class="slide-arrow prev-arrow" onclick="changeSlide(-1)">&#10094;</button>
+        <button class="slide-arrow next-arrow" onclick="changeSlide(1)">&#10095;</button>
+
+        <div class="slider-dots">
+            <span class="dot active" onclick="currentSlide(1)"></span>
+            <span class="dot" onclick="currentSlide(2)"></span>
+            <span class="dot" onclick="currentSlide(3)"></span>
+            <span class="dot" onclick="currentSlide(4)"></span>
         </div>
     </header>
 
