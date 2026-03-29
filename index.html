@@ -1,244 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zont | Zontik-1</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* =========================================
+           DEMO SECTION (UPDATED LAYOUT & ANIMATION)
+           ========================================= */
+        #demo {
+            background-color: var(--color-2); /* 기존 인라인 스타일을 CSS로 이동 */
+            padding: 8rem 0; /* 스펙 섹션과 동일한 패딩 적용 */
+            overflow: hidden; /* 슬라이드 애니메이션 중 넘치는 부분 숨김 */
+        }
 
-<title>ZONT | ZONTIK-1</title>
+        #demo .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 1:1 비율의 두 열 구성 */
+            gap: 4rem; /* 스펙 섹션과 동일한 간격 */
+            align-items: center; /* 이미지와 텍스트 세로 중앙 정렬 */
+        }
 
-<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+        #demo .demo-image-col img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px; /* 기본적인 스타일링 */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3); /* 기본적인 스타일링 */
+        }
 
+        #demo .demo-text-col {
+            text-align: left; /* 부모의 text-align: center 해제 */
+            color: #ffffff;
+        }
+
+        #demo .demo-text-col .section-title {
+            text-align: left; /* 타이틀 정렬 */
+            margin: 0 0 2rem 0; /* 기존 인라인 마진 초기화 */
+        }
+
+        #demo .demo-text-col p {
+            font-size: 1.2rem;
+            margin-bottom: 3rem; /* 기존 인라인 마진 초기화 */
+            color: rgba(255, 255, 255, 0.8); /* 약간 부드러운 흰색 */
+        }
+    </style>
 </head>
-
 <body>
-
-<!-- NAVBAR -->
-
-<nav id="navbar">
-
-<div class="logo">ZONT</div>
-
-<ul class="nav-links">
-
-<li><a href="index.html">Home</a></li>
-
-<li><a href="about.html">About</a></li>
-
-<li><a href="index.html#specs">Specs</a></li>
-
-<li><a href="demo.html">Demo</a></li>
-
-<li><a href="download.html">Download</a></li>
-
-</ul>
-
+    <nav id="navbar">
+    <div class="logo">ZONT</div>
+    <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="index.html#specs">Specs</a></li>
+        <li><a href="demo.html">Demo</a></li> 
+        <li><a href="index.html#download">Download</a></li>
+    </ul>
 </nav>
 
+    <header id="home" class="hero">
+        <div class="slider-container">
+            <div class="hero-slide active">
+                <div class="video-container">
+                    <video autoplay muted loop playsinline>
+                        <source src="0329.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div class="hero-content">
+                    <h1>ZONTIK-1</h1>
+                    <p>Next-Generation Active Protection System</p>
+                    <a href="#about" class="btn">Discover More</a>
+                </div>
+            </div>
+            
+            <div class="hero-slide">
+                <div class="hero-content">
+                    <h1>360° DEFENSE</h1>
+                    <p>Download the system brochure and technical specifications.</p>
+                    <a href="#download" class="btn">Download Snapshot</a>
+                </div>
+            </div>
+            
+            <div class="hero-slide">
+                <div class="hero-content">
+                    <h1>UNMATCHED SPECS</h1>
+                    <p>Explore the technical capabilities of Zontik-1.</p>
+                    <a href="#specs" class="btn">View Specifications</a>
+                </div>
+            </div>
+            
+            <div class="hero-slide">
+                <div class="hero-content">
+                    <h1>LIVE SIMULATOR</h1>
+                    <p>Experience target identification and combat log system.</p>
+                    <a href="demo.html" class="btn">Launch Demo</a>
+                </div>
+            </div>
+        </div>
 
+        <button class="slide-arrow prev-arrow" onclick="changeSlide(-1)">&#10094;</button>
+        <button class="slide-arrow next-arrow" onclick="changeSlide(1)">&#10095;</button>
 
-<!-- HERO -->
+        <div class="slider-dots">
+            <span class="dot active" onclick="currentSlide(1)"></span>
+            <span class="dot" onclick="currentSlide(2)"></span>
+            <span class="dot" onclick="currentSlide(3)"></span>
+            <span class="dot" onclick="currentSlide(4)"></span>
+        </div>
+    </header>
 
-<header id="home" class="hero">
-
-<div class="slider-container">
-
-<div class="hero-slide active">
-
-<div class="video-container">
-
-<video autoplay muted loop playsinline>
-
-<source src="0329.mp4" type="video/mp4">
-
-</video>
-
+    <div id="companies-logo" style="background-color: var(--color-3); padding: 4rem 0;">
+    <div class="container" style="display: flex; justify-content: space-around; align-items: center; max-width: 1200px; margin: 0 auto; gap: 2rem;">
+        <img src="companies_logo.png" alt="Trusted Companies Logos" style="width: 100%; height: auto; max-width: 1000px; filter: grayscale(100%) opacity(70%);">
+    </div>
 </div>
 
-<div class="hero-content">
+   <section id="specs">
+        <h2 class="section-title">Specifications & Capabilities</h2>
+        
+        <div class="specs-content">
+            <div class="specs-overview">
+                <h3>System Overview</h3>
+                <p>The Zontik-1 is a modular, externally mounted Active Protection System designed to provide survivability without the structural penalties of legacy systems. Built around an independent, dual-axis rotary turret, the system can be integrated onto any armored platform—from Main Battle Tanks (MBTs) to lightweight Infantry Fighting Vehicles (IFVs).</p>
+                <p>By combining robust hardware engineering with proprietary, data-driven threat discrimination software, the Zontik-1 offers a 360-degree kinetic defense.</p>
+            </div>
 
-<h1>ZONTIK-1</h1>
+            <table class="specs-table">
+                <tr>
+                    <th>System Architecture</th>
+                    <td>Externally mounted dual-tube rotary turret (Standalone)</td>
+                </tr>
+                <tr>
+                    <th>Total System Weight</th>
+                    <td>Under 450 kg (Configuration dependent)</td>
+                </tr>
+                <tr>
+                    <th>Reaction Time</th>
+                    <td>< 250 milliseconds</td>
+                </tr>
+                <tr>
+                    <th>Protection Arc</th>
+                    <td>360° Azimuth / -15° to +75° Elevation</td>
+                </tr>
+                <tr>
+                    <th>Sensor Suite</th>
+                    <td>4x Distributed Miniaturized AESA Radars + Integrated EO/IR Cameras</td>
+                </tr>
+                <tr>
+                    <th>Interceptor Type</th>
+                    <td>Fin-stabilized, high-explosive blast interceptor</td>
+                </tr>
+                <tr>
+                    <th>Threats Defeated</th>
+                    <td>ATGMs, RPGs, Recoilless Rifles, HEAT, Loitering Munitions</td>
+                </tr>
+                <tr>
+                    <th>Operating Temp.</th>
+                    <td>-50°C to +65°C</td>
+                </tr>
+            </table>
+        </div>
+    </section>
 
-<p>Next-Generation Active Protection System</p>
-
-<a href="#specs" class="btn">Discover More</a>
-
-</div>
-
-</div>
-
-
-
-<div class="hero-slide">
-
-<div class="hero-content">
-
-<h1>360° DEFENSE</h1>
-
-<p>Download the system brochure and technical specifications.</p>
-
-<a href="download.html" class="btn">Download Snapshot</a>
-
-</div>
-
-</div>
-
-
-
-<div class="hero-slide">
-
-<div class="hero-content">
-
-<h1>UNMATCHED SPECS</h1>
-
-<p>Explore the technical capabilities of Zontik-1.</p>
-
-<a href="#specs" class="btn">View Specifications</a>
-
-</div>
-
-</div>
-
-
-
-<div class="hero-slide">
-
-<div class="hero-content">
-
-<h1>LIVE SIMULATOR</h1>
-
-<p>Experience target identification and combat log system.</p>
-
-<a href="demo.html" class="btn">Launch Demo</a>
-
-</div>
-
-</div>
-
-
-
-</div>
-
-
-
-<button class="slide-arrow prev-arrow" onclick="changeSlide(-1)">&#10094;</button>
-
-<button class="slide-arrow next-arrow" onclick="changeSlide(1)">&#10095;</button>
-
-
-
-<div class="slider-dots">
-
-<span class="dot active" onclick="currentSlide(1)"></span>
-
-<span class="dot" onclick="currentSlide(2)"></span>
-
-<span class="dot" onclick="currentSlide(3)"></span>
-
-<span class="dot" onclick="currentSlide(4)"></span>
-
-</div>
-
-</header>
-
-
-
-<!-- SPECS -->
-
-<section id="specs">
-
-<h2 class="section-title">Specifications & Capabilities</h2>
-
-<div class="specs-content">
-
-<table class="specs-table">
-
-<tr>
-<th>Total System Weight</th>
-<td>Under 450 kg</td>
-</tr>
-
-<tr>
-<th>Reaction Time</th>
-<td>< 250 milliseconds</td>
-</tr>
-
-<tr>
-<th>Protection Arc</th>
-<td>360° Azimuth</td>
-</tr>
-
-<tr>
-<th>Sensor Suite</th>
-<td>AESA Radar + EO/IR Cameras</td>
-</tr>
-
-<tr>
-<th>Interceptor Type</th>
-<td>High-explosive blast interceptor</td>
-</tr>
-
-</table>
-
-</div>
-
+<section id="demo">
+    <div class="container demo-grid fade-in"> <div class="demo-image-col slide-in-left">
+            <img src="demo.jpg" alt="Zontik-1 System Simulator Screenshot">
+        </div>
+        <div class="demo-text-col slide-in-right">
+            <h2 class="section-title">System Simulator</h2>
+            <p>
+                Experience the Zontik-1 target identification and combat log system on the web.
+            </p>
+            <a href="demo.html" class="btn">Launch Demo</a>
+        </div>
+    </div>
 </section>
 
-
-
-<!-- DEMO -->
-
-<section id="demo" style="background-color: var(--color-2); text-align: center;">
-
-<h2 class="section-title">System Simulator</h2>
-
-<p>
-
-Experience the Zontik-1 target identification and combat log system on the web.
-
-</p>
-
-<a href="demo.html" class="btn">Launch Demo</a>
-
 </section>
+    
+    <section id="download">
+        <h2 class="section-title">Download</h2>
+        <p>Download the system brochure and technical specifications.</p>
+        <a href="#" class="btn download-btn">Download Brochure</a>
+    </section>
 
-
-
-<!-- DOWNLOAD (핵심 섹션) -->
-
-<a href="download.html" class="btn download-btn">
-
-  ZONTIK-Software v1.23
-
-</a>
-Download the system brochure and technical specifications.
-
-</p>
-
-
-
-<a href="#" class="btn download-btn">
-
-ZONTIK-Software v1.23
-
-</a>
-
-
-
-<p style="margin-top:30px; font-size:1rem; color:#bbb;">
-
-Project Team: <strong>David</strong> & <strong>DYK</strong>
-
-</p>
-
-
-
-</section>
-
-
-
-<script src="script.js"></script>
-
+    <script src="script.js"></script>
 </body>
-
 </html>
