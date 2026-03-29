@@ -183,3 +183,168 @@ viewCamera.onclick = (e) => {
 };
 
 setTimeout(triggerRandomAttack, 1000);
+
+// =========================================================================
+// [추가됨] 5. 인터랙티브 튜토리얼 시스템 (가이드 투어)
+// =========================================================================
+
+// 튜토리얼용 CSS 자동 주입
+const tutorialCSS = `
+#tutorial-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 10000; display: none; transition: opacity 0.3s;
+}
+#tutorial-box {
+    position: fixed; z-index: 10002;
+    background: #111; border: 1px solid #0f0; color: #0f0;
+    padding: 15px; max-width: 300px; display: none;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.2); font-family: monospace;
+}
+#tutorial-box button {
+    margin-top: 15px; background: #0f0; color: #000;
+    border: none; padding: 5px 10px; cursor: pointer; font-weight: bold; width: 100%;
+}
+.tutorial-highlight {
+    position: relative !important; z-index: 10001 !important;
+    pointer-events: none;
+    box-shadow: 0 0 0 4px rgba(0, 255, 0, 0.5);
+    background: #111;
+}
+.tutorial-explosion {
+    position: absolute; width: 40px; height: 40px; 
+    background: radial-gradient(circle, #fff 10%, #ff0 40%, #f00 70%, transparent 100%);
+    border-radius: 50%; transform: translate(-50%, -50%);
+}
+`;
+document.head.insertAdjacentHTML('beforeend', `<style>${tutorialCSS}</style>`);
+
+// 튜토리얼 DOM 요소 생성
+const tutOverlay = document.createElement('div');
+tutOverlay.id = 'tutorial-overlay';
+document.body.appendChild(tutOverlay);
+
+const tutBox = document.createElement('div');
+tutBox.id = 'tutorial-box';
+tutBox.innerHTML = `<div id="tutorial-text" style="line-height:1.4;"></div><button onclick="nextTutorialStep()">다음 (NEXT)</button>`;
+document.body.appendChild(tutBox);
+
+let currentTutStep = 0;
+
+// 튜토리얼 시나리오 단계
+const tutorialSteps = [
+    { target: null, text: "Zontik-1 APS 소프트웨어 데모버전입니다.<br><br>본 튜토리얼에서는 시스템이 어떻게 작동하는지 안내합니다." },
+    { target: ".hud-mode", text: "현재 센서 작동 모드(OPTICAL/IR)를 표시합니다." },
+    { target: ".hud-top-center", text: "시스템의 실시간 시간과 센서 온라인 상태를 확인합니다." },
+    { target: ".hud-azimuth", text: "식별된 위협의 방위각(Azimuth)과 거리를 실시간으로 표시합니다." },
+    { target: "#rpg-gunner-box", text: "위협(사수)이 식별되었습니다. 시스템이 적의 위치를 파악합니다.", action: showTutGunner },
+    { target: "#rpg-projectile-box", text: "투사체 발사가 감지되었습니다. 궤적을 분석하여 요격 지점을 계산합니다.", action: showTutProjectile },
+    { target: ".tutorial-explosion", text: "우리회사는 500m 이내의 모든 표적을 무력화 할수 있습니다.", action: showTutExplosion },
+    { target: "#btn-log", text: "전투 로그(Combat Log) 버튼을 클릭하여 기록을 확인해 보십시오.", action: prepareTutLog },
+    { target: "#log-view", text: "이곳에서 교전 시간, 방위각, 요격 여부를 사후 분석할 수 있습니다.<br><br>튜토리얼을 종료하고 실전 시뮬레이션을 시작합니다.", action: showTutLog }
+];
+
+function startTutorial() {
+    tutOverlay.style.display = 'block';
+    tutBox.style.display = 'block';
+    executeTutorialStep();
+}
+
+function executeTutorialStep() {
+    if (currentTutStep >= tutorialSteps.length) {
+        endTutorial();
+        return;
+    }
+
+    // 이전 하이라이트 제거
+    document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+    
+    const step = tutorialSteps[currentTutStep];
+    
+    // 단계별 특수 액션 실행 (적 생성 등)
+    if (step.action) step.action();
+
+    document.getElementById('tutorial-text').innerHTML = step.text;
+
+    // 타겟 하이라이트 및 박스 위치 지정
+    if (step.target) {
+        const targetEl = document.querySelector(step.target);
+        if (targetEl) {
+            targetEl.classList.add('tutorial-highlight');
+            const rect = targetEl.getBoundingClientRect();
+            
+            // 화면 밖으로 박스가 나가지 않도록 조정
+            let topPos = rect.bottom + 15;
+            let leftPos = rect.left;
+            if (topPos > window.innerHeight - 100) topPos = rect.top - 100;
+            
+            tutBox.style.top = topPos + 'px';
+            tutBox.style.left = leftPos + 'px';
+            tutBox.style.transform = 'none';
+        }
+    } else {
+        // 타겟이 없으면 중앙 배치
+        tutBox.style.top = '50%';
+        tutBox.style.left = '50%';
+        tutBox.style.transform = 'translate(-50%, -50%)';
+    }
+}
+
+window.nextTutorialStep = () => {
+    currentTutStep++;
+    executeTutorialStep();
+};
+
+function endTutorial() {
+    tutOverlay.remove();
+    tutBox.remove();
+    document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+    document.querySelector('.tutorial-explosion')?.remove();
+    
+    rpgGunnerBox.style.display = 'none';
+    rpgProjectileBox.style.display = 'none';
+    document.getElementById('btn-camera').click(); // 원래 화면 복귀
+    
+    // 튜토리얼 종료 후 실전 무작위 공격 개시
+    triggerRandomAttack();
+}
+
+// 튜토리얼 전용 연출 함수들
+function showTutGunner() {
+    rpgGunnerBox.style.display = 'block';
+    rpgGunnerBox.style.left = '25%';
+    rpgGunnerBox.style.top = '70%';
+    rpgGunnerBox.style.width = '6%';
+    rpgGunnerBox.style.opacity = '1';
+    rpgGunnerBox.style.transform = 'translate(-50%, -50%)';
+    updateHUD('TUTORIAL TARGET', 25, 70, 84, 85);
+}
+
+function showTutProjectile() {
+    rpgGunnerBox.style.opacity = '0.3'; // 사수는 흐려짐
+    rpgProjectileBox.style.display = 'block';
+    rpgProjectileBox.style.left = '45%';
+    rpgProjectileBox.style.top = '75%';
+    rpgProjectileBox.style.width = '12%';
+    rpgProjectileBox.style.transform = 'translate(-50%, -50%)';
+}
+
+function showTutExplosion() {
+    rpgProjectileBox.style.display = 'none';
+    const exp = document.createElement('div');
+    exp.className = 'tutorial-explosion tutorial-highlight';
+    exp.style.left = '45%';
+    exp.style.top = '75%';
+    viewCamera.appendChild(exp);
+}
+
+function prepareTutLog() {
+    document.querySelector('.tutorial-explosion')?.remove();
+}
+
+function showTutLog() {
+    document.getElementById('btn-log').click(); // 강제 로그 화면 전환
+}
+
+// 튜토리얼 시작 (기존 triggerRandomAttack 대체)
+setTimeout(startTutorial, 500);
