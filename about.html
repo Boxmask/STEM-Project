@@ -9,9 +9,8 @@
 
     <style>
         /* =========================================
-           ABOUT PAGE: GRADIENT DECORATION
+           ABOUT PAGE: GRADIENT DECORATION (UPDATED)
            ========================================= */
-        /* 전체 컨테이너 패딩 리셋 */
         #about {
             padding-top: 5rem;
             padding-bottom: 0;
@@ -51,7 +50,7 @@
             line-height: 1.8;
         }
 
-        /* 1. 사진 왼쪽 (왼쪽에서 오른쪽으로 어두워지는 그라데이션) -> 텍스트는 오른쪽 배치 */
+        /* 1. 사진 왼쪽 (company_building.jpg) */
         .bg-left {
             background: linear-gradient(to right, rgba(44, 46, 37, 0) 0%, #2C2E25 65%), url('company_building.jpg') center/cover no-repeat;
         }
@@ -60,7 +59,7 @@
             width: 55%;
         }
 
-        /* 2. 사진 오른쪽 (오른쪽에서 왼쪽으로 어두워지는 그라데이션) -> 텍스트는 왼쪽 배치 */
+        /* 2. 사진 오른쪽 (BREM-80-ARV) */
         .bg-right {
             background: linear-gradient(to left, rgba(44, 46, 37, 0) 0%, #2C2E25 65%), url('BREM-80-ARV-at-Army-2024-event-scaled.jpg') center/cover no-repeat;
         }
@@ -69,16 +68,26 @@
             width: 55%;
         }
 
-        /* 3. 사진 중앙 (중앙에서 바깥으로 어두워지는 원형 그라데이션) -> 텍스트는 중앙 배치 */
+        /* 3. 사진 중앙 (image-5.webp) */
         .bg-center {
             background: radial-gradient(circle, rgba(44, 46, 37, 0.3) 0%, #2C2E25 80%), url('image-5.webp') center/cover no-repeat;
             justify-content: center;
             text-align: center;
-            padding-bottom: 8rem;
+            padding-bottom: 5rem;
         }
         .bg-center .text-box {
             margin: 0 auto;
-            width: 70%;
+            width: 75%;
+        }
+
+        /* 4. 사진 왼쪽 하단 (새로운 포럼 이미지) */
+        .bg-bottom {
+            background: linear-gradient(to right, rgba(44, 46, 37, 0) 0%, #2C2E25 65%), url('bj3qH2gw-Saudi---Russian-CEO-Forum-resize-1200x800.jpg') center/cover no-repeat;
+        }
+        .bg-bottom .text-box {
+            margin-left: auto;
+            width: 55%;
+            padding-bottom: 4rem;
         }
     </style>
 </head>
@@ -89,7 +98,8 @@
             <li><a href="index.html">Home</a></li>
             <li><a href="about.html" class="active">About</a></li>
             <li><a href="index.html#specs">Specs</a></li>
-            <li><a href="demo.html">Demo</a></li> <li><a href="index.html#download">Download</a></li>
+            <li><a href="demo.html">Demo</a></li>
+            <li><a href="index.html#download">Download</a></li>
         </ul>
     </nav>
 
@@ -99,36 +109,36 @@
             <div class="text-box">
                 <h2>About Zont</h2>
                 <p>Welcome to Zont. We do not build tanks. We do not build infantry fighting vehicles. We build the definitive guarantee that the soldiers inside them come home alive.</p>
-                <p>Headquartered in the industrial heartland of Eastern Europe, Zont is a premier defense technology firm specializing exclusively in next-generation Active Protection Systems (APS). In a world where anti-armor threats are evolving at a breakneck pace—from top-attack munitions to hypersonic ATGMs and loitering drones—traditional passive armor is no longer enough. The future of armored warfare requires a proactive shield. It requires Zont.</p>
+                <p>Headquartered in the industrial heartland of Eastern Europe, Zont is a premier defense technology firm specializing exclusively in next-generation Active Protection Systems (APS).</p>
 
                 <h3>Our Story: The Latecomer’s Advantage</h3>
                 <p>Zont was not born out of a bloated, Cold War-era state conglomerate. We are a distinctly modern enterprise, founded by visionary engineers Hye Kang Jee and D.Y. Kim.</p>
-                <p>Before founding Zont, Jee and Kim spent years analyzing global armored conflicts. They recognized a fatal flaw in the legacy defense industry: the pioneers of APS technology were trapped by their own outdated architectures. Older systems were heavy, power-hungry, and relied on rudimentary programming that often endangered accompanying infantry.</p>
+                <p>Before founding Zont, Jee and Kim spent years analyzing global armored conflicts. They recognized a fatal flaw in the legacy defense industry: the pioneers of APS technology were trapped by their own outdated architectures.</p>
                 <p>We didn't invent the Active Protection System. We perfected it.</p>
-                <p>As a latecomer to the defense market, Zont entered the field unburdened by legacy code or obsolete hardware. Instead, Jee and Kim leveraged the greatest asset of the 21st century: Data. By aggregating and analyzing thousands of terabytes of modern combat telemetry, ballistic trajectories, and threat-deployment patterns, Zont developed algorithmic models that predict and intercept threats with unprecedented efficiency. We combined the relentless, rugged reliability of Eastern European heavy manufacturing with cutting-edge, data-driven machine learning.</p>
-                <p>The result? Systems that react faster, weigh less, and neutralize threats with mathematical precision.</p>
             </div>
         </div>
 
         <div class="about-section bg-right">
             <div class="text-box">
-                <h3>Our Philosophy: Efficiency Through Intelligence</h3>
-                <p>At Zont, we believe that an Active Protection System should be a seamless extension of the vehicle's nervous system.</p>
-                <p>Traditional Eastern European defense doctrine has always favored brute force. We evolved that doctrine. While our hardware is built to withstand the harshest combat environments on Earth—from freezing mud to searing desert heat—our software operates with surgical elegance. By utilizing advanced AI and massive datasets, our systems don't just react to incoming fire; they classify, prioritize, and eliminate the threat using the exact minimum amount of kinetic force required. This radically reduces collateral damage, making our APS the safest in the world for dismounted infantry operating alongside our armor.</p>
-
-                <h3>Our Flagship: The Zontik-1 APS</h3>
-                <p>The culmination of our data-centric approach is our flagship product: the Zontik-1 (Russian for "Little Umbrella").</p>
-                <p>Do not let the name fool you. The Zontik-1 is a highly aggressive, 360-degree kinetic shield. Utilizing an integrated array of miniaturized AESA radars and hyper-fast electro-optical sensors, the Zontik-1 can detect, track, and intercept multi-directional threats in milliseconds.</p>
-                <p>Because the Zontik-1 was trained on our proprietary combat-data algorithms, it boasts the highest threat-discrimination rate in the industry. It will not waste countermeasures on small-arms fire or bird strikes. When a genuine threat is detected, the Zontik-1 deploys a tightly focused, high-explosive kinetic interceptor to physically shatter the incoming projectile before it ever touches the hull.</p>
-                <p>Compact, modular, and easily retrofitted onto both legacy platforms and next-generation vehicles, the Zontik-1 is the ultimate equalizer on the modern battlefield.</p>
+                <h3>Efficiency Through Intelligence</h3>
+                <p>As a latecomer, Zont entered the field unburdened by legacy code. Instead, Jee and Kim leveraged the greatest asset of the 21st century: Data. By analyzing thousands of terabytes of combat telemetry, Zont developed algorithmic models that predict and intercept threats with unprecedented efficiency.</p>
+                <p>Traditional doctrine favored brute force. We evolved that. While our hardware is built to withstand the harshest environments, our software operates with surgical elegance. By utilizing advanced AI, our systems classify and eliminate threats using the exact minimum kinetic force required, radically reducing collateral damage for dismounted infantry.</p>
             </div>
         </div>
 
         <div class="about-section bg-center">
             <div class="text-box">
+                <h3>Our Flagship: The Zontik-1 APS</h3>
+                <p>The culmination of our data-centric approach is our flagship product: the Zontik-1 ("Little Umbrella"). It is a highly aggressive, 360-degree kinetic shield utilizing miniaturized AESA radars and hyper-fast electro-optical sensors.</p>
+                <p>The Zontik-1 boasts the highest threat-discrimination rate in the industry. It will not waste countermeasures on non-threats. When a genuine threat is detected, it deploys a tightly focused, high-explosive kinetic interceptor to physically shatter the incoming projectile before it ever touches the hull.</p>
+            </div>
+        </div>
+
+        <div class="about-section bg-bottom">
+            <div class="text-box">
                 <h3>The Future is Covered</h3>
                 <p>Warfare is changing, and the threats against armor are becoming smarter. But under the leadership of Hye Kang Jee and D.Y. Kim, Zont remains exactly one step ahead. We are continuously feeding new battlefield data into our neural networks, ensuring that our systems evolve faster than the weapons designed to beat them.</p>
-                <p>When the skies rain steel, we keep you covered.<br>Welcome to Zont.</p>
+                <p>When the skies rain steel, we keep you covered.<br><strong>Welcome to Zont.</strong></p>
             </div>
         </div>
 
