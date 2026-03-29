@@ -65,3 +65,51 @@ const observer = new IntersectionObserver((entries, observer) => {
 if (specsSection) {
     observer.observe(specsSection);
 }
+
+// =========================================
+// 메인 화면 슬라이더(Hero Carousel) 로직
+// =========================================
+let slideIndex = 1;
+const slides = document.querySelectorAll(".hero-slide");
+const dots = document.querySelectorAll(".dot");
+let slideInterval;
+
+function showSlides(n) {
+    if (!slides.length) return;
+
+    if (n > slides.length) { slideIndex = 1; }
+    if (n < 1) { slideIndex = slides.length; }
+
+    slides.forEach(slide => slide.classList.remove("active"));
+    dots.forEach(dot => dot.classList.remove("active"));
+
+    slides[slideIndex - 1].classList.add("active");
+    dots[slideIndex - 1].classList.add("active");
+}
+
+function changeSlide(n) {
+    showSlides(slideIndex += n);
+    resetInterval(); // 수동 조작 시 타이머 초기화
+}
+
+function currentSlide(n) {
+    showSlides(slideIndex = n);
+    resetInterval();
+}
+
+// 5초마다 자동 슬라이드 전환
+function startInterval() {
+    slideInterval = setInterval(() => {
+        showSlides(slideIndex += 1);
+    }, 5000);
+}
+
+function resetInterval() {
+    clearInterval(slideInterval);
+    startInterval();
+}
+
+// 페이지 로드 시 슬라이드 타이머 시작
+if (slides.length > 0) {
+    startInterval();
+}
