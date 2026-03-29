@@ -9,34 +9,32 @@
     
     <style>
         /* =========================================
-           ABOUT US: GRADIENT IMAGE SECTIONS
+           ABOUT US: BACKGROUND IMAGE SECTIONS
            ========================================= */
         .about-content {
-            padding: 0; /* 기존 패딩 초기화 */
+            padding: 0; /* 기본 패딩 초기화 */
             max-width: 100%; /* 너비를 꽉 채움 */
         }
 
         .about-item {
             position: relative;
             width: 100%;
-            min-height: 400px; /* 각 섹션의 최소 높이 */
+            min-height: 500px; /* 각 섹션의 최소 높이 설정 */
             display: flex;
             align-items: center;
             overflow: hidden;
-            border-bottom: 2px solid var(--color-4); /* 브랜드 컬러 구분선 */
-        }
-
-        .about-item:last-child {
-            border-bottom: none;
+            border-bottom: 2px solid var(--color-4); /* 구분선 제거 (선택 사항) */
         }
 
         /* 텍스트 블록 기본 스타일 */
         .content-block {
             position: relative;
-            z-index: 2; /* 이미지 그라데이션 위에 위치 */
-            max-width: 600px;
+            z-index: 2; /* 이미지 배경 위에 위치 */
+            max-width: 800px; /* 텍스트 가독성을 위한 최대 너비 */
             padding: 40px;
             color: #ffffff;
+            margin: 0 auto; /* 중앙 정렬 */
+            text-align: center; /* 텍스트 중앙 정렬 */
         }
 
         .content-block h3 {
@@ -48,7 +46,7 @@
         }
 
         .content-block p {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             line-height: 1.8;
             margin-bottom: 1rem;
         }
@@ -57,13 +55,15 @@
             list-style: none;
             padding: 0;
             margin-top: 1rem;
+            display: inline-block; /* 리스트 내용을 중앙 정렬 */
+            text-align: left; /* 리스트 내용은 왼쪽 정렬 */
         }
 
         .content-block li {
             position: relative;
             padding-left: 25px;
             margin-bottom: 10px;
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: var(--color-5);
         }
 
@@ -74,60 +74,40 @@
             color: var(--color-4);
         }
 
+        /* 배경 이미지 및 반투명 그라데이션 오버레이 */
+        .about-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* 텍스트 아래 */
+            background: rgba(26, 29, 18, 0.85); /* 브랜드 어두운 배경색 반투명 오버레이 */
+        }
+
         /* -----------------------------------------
-           ITEM 1: Modular (Left-to-Right Fade)
+           ITEM 1: Modular (company_building.jpg)
            ----------------------------------------- */
         .item-modular {
-            background: 
-                /* 검은색 그라데이션: 왼쪽(보임) -> 오른쪽(페이드아웃) */
-                linear-gradient(to right, rgba(26, 29, 18, 1) 40%, rgba(26, 29, 18, 0) 70%),
-                url("company_building.jpg") no-repeat center right;
-            background-size: auto 100%; /* 이미지를 오른쪽에 배치하고 높이 맞춤 */
-        }
-
-        /* 텍스트를 왼쪽에 정렬 */
-        .left-aligned {
-            margin-right: auto;
-            margin-left: 10%;
-        }
-
-        /* -----------------------------------------
-           ITEM 2: Mounted (Right-to-Left Fade)
-           ----------------------------------------- */
-        .item-mounted {
-            background: 
-                /* 검은색 그라데이션: 오른쪽(보임) -> 왼쪽(페이드아웃) */
-                linear-gradient(to left, rgba(26, 29, 18, 1) 40%, rgba(26, 29, 18, 0) 70%),
-                url("BREM-80-ARV-at-Army-2024-event-scaled.jpg") no-repeat center left;
-            background-size: auto 100%; /* 이미지를 왼쪽에 배치하고 높이 맞춤 */
-        }
-
-        /* 텍스트를 오른쪽에 정렬 */
-        .right-aligned {
-            margin-left: auto;
-            margin-right: 10%;
-        }
-
-        /* -----------------------------------------
-           ITEM 3: Integrated (Center-to-Edge Fade)
-           ----------------------------------------- */
-        .item-integrated {
-            background: 
-                /* 원형 그라데이션: 중앙(투명-보임) -> 가장자리(검은색-페이드아웃) */
-                radial-gradient(circle at center, rgba(26, 29, 18, 0) 30%, rgba(26, 29, 18, 1) 70%),
-                url("image-5.webp") no-repeat center;
+            background: url("company_building.jpg") no-repeat center;
             background-size: cover;
         }
 
-        /* 텍스트를 중앙에 정렬 */
-        .center-aligned {
-            margin: 0 auto;
-            text-align: center;
+        /* -----------------------------------------
+           ITEM 2: Mounted (BREM-80-ARV-at-Army-2024-event-scaled.jpg)
+           ----------------------------------------- */
+        .item-mounted {
+            background: url("BREM-80-ARV-at-Army-2024-event-scaled.jpg") no-repeat center;
+            background-size: cover;
         }
 
-        .center-aligned ul {
-            display: inline-block;
-            text-align: left; /* 리스트 내용은 왼쪽 정렬 */
+        /* -----------------------------------------
+           ITEM 3: Integrated (image-5.webp)
+           ----------------------------------------- */
+        .item-integrated {
+            background: url("image-5.webp") no-repeat center;
+            background-size: cover;
         }
     </style>
 </head>
@@ -152,9 +132,13 @@
     <section class="about-content">
         
         <div class="about-item item-modular">
-            <div class="content-block left-aligned fade-in">
+            <div class="content-block fade-in">
                 <h3>Modular Architecture</h3>
-                <p>The system is built around an independent, dual-tube rotary turret that can be seamlessly integrated onto diverse vehicular platforms.</p>
+                <p>
+                    The system is built around an independent, dual-axis rotary turret that can be seamlessly
+                    integrated onto diverse vehicular platforms—from Main Battle Tanks (MBTs) to lightweight
+                    Infantry Fighting Vehicles (IFVs).
+                </p>
                 <ul>
                     <li>360-degree Azimuth & -15° to +75° Elevation coverage.</li>
                     <li>Dual Interceptor Launch Tubes for rapid sequential engagement.</li>
@@ -164,9 +148,12 @@
         </div>
 
         <div class="about-item item-mounted">
-            <div class="content-block right-aligned fade-in">
-                <h3>Externally Mounted</h3>
-                <p>Built as a stand-alone bolt-on solution to provide kinetic protection with minimum impact on the base vehicle structure.</p>
+            <div class="content-block fade-in">
+                <h3>Externally Mounted Design</h3>
+                <p>
+                    Built as a stand-alone bolt-on solution to provide kinetic protection with minimum impact
+                    on the base vehicle structure.
+                </p>
                 <ul>
                     <li>Preserves the integrity of the vehicle’s primary armor.</li>
                     <li>Easily integrated without complex structural modifications.</li>
@@ -176,14 +163,12 @@
         </div>
 
         <div class="about-item item-integrated">
-            <div class="content-block center-aligned fade-in">
-                <h3>Integrated Technology</h3>
-                <p>Built as a stand-alone bolt-on solution to provide kinetic protection with minimum impact on the base vehicle structure.</p>
-                <ul>
-                    <li>Ideally suited for both new production and retrofitting existing fleets.</li>
-                    <li>Easily integrated without complex structural modifications.</li>
-                    <li>Preserves the integrity of the vehicle’s primary armor.</li>
-                </ul>
+            <div class="content-block fade-in">
+                <h3>Integrated Sensor Suite</h3>
+                <p>
+                    Advanced AESA radar and EO/IR fusion for optimal threat discrimination and rapid
+                    response. Proprietary algorithms deliver 360-degree kinetic defense against incoming projectiles.
+                </p>
             </div>
         </div>
 
