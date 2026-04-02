@@ -1,1 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>ZONT | Revision</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* Revision Page Layout */
+
+        body {
+            background-color: #2C2E25;
+        }
+
+        .revision-container {
+            padding: 8rem 10%;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+
+        .revision-box {
+            max-width: 900px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .revision-box h2 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+
+        .revision-box p {
+            font-size: 1.15rem;
+            line-height: 1.9;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 0.9rem 1.8rem;
+            background-color: var(--color-4);
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background-color: var(--color-5);
+            transform: translateY(-2px);
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- NAVBAR (about이랑 동일하게 유지) -->
+    <nav id="navbar">
+        <div class="logo">ZONT</div>
+
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="index.html#specs">Specs</a></li>
+            <li><a href="demo.html">Demo</a></li>
+            <li><a href="revision.html" class="active">Revision</a></li>
+            <li><a href="index.html#download">Download</a></li>
+        </ul>
+    </nav>
+
+    <!-- REVISION CONTENT -->
+
+    <section class="revision-container">
+
+        <div class="revision-box">
+
+            <h2>Project Revision</h2>
+
+            <p>
+            While creating this website, I faced many difficulties.
+            Overall, it was challenging to manage the coding, the direction of the design, 
+            and maintaining a consistent tone and atmosphere throughout the project.
+            </p>
+
+            <p>
+            Among these, the most difficult part was building the demo page. 
+            Even though it may seem simple, I had to create everything from 
+            the game engine to the objects, background, spawn positions, 
+            and interface, which made it quite demanding.
+            </p>
+
+            <p>
+            There were issues like mismatched coordinates between the screen, 
+            the mouse, and the website itself. Sometimes the AI misunderstood 
+            my requests and produced strange results. There were also errors 
+            that appeared for no clear reason, and I even remember making 
+            my own debugging tools because of that.
+            </p>
+
+            <p>
+            However, despite all these difficulties, there was a certain thrill—
+            sitting at my desk, struggling for hours, and finally seeing the 
+            code work exactly the way I wanted. That feeling was so rewarding 
+            that I couldn’t stop (seriously).
+            </p>
+
+            <p>
+            So yes, I think this project came together through both the 
+            challenges and the sense of reward—almost like the dopamine 
+            you get from solving problems.
+            </p>
+
+            <p>
+            Thank you for reading.
+            </p>
+
+            <!-- Back Button -->
+            <a href="about.html" class="back-btn">
+                ← Back to About
+            </a>
+
+        </div>
+
+    </section>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
