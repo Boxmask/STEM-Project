@@ -478,3 +478,27 @@ section {
 .specs-table td {
     color: #ffffff;
 }
+.revision-btn {
+    display: inline-block;
+
+    margin-top: 1.5rem;
+
+    padding: 0.8rem 2rem;   /* 크기 조금 키움 */
+
+    font-size: 1rem;        /* 글씨 조금 크게 */
+    font-weight: 600;
+
+    background-color: #2f6f3e;   /* 초록색 */
+    color: white;
+
+    text-decoration: none;
+
+    border-radius: 6px;
+
+    transition: 0.25s ease;
+}
+
+.revision-btn:hover {
+    background-color: #3f8a50;
+    transform: translateY(-2px);
+}
